@@ -20,7 +20,7 @@ Plasm.view((V,[triangles]))
 ```
 """
 
-function quads2triangles(quads::Lar.Cells)::Lar.Cells
+function quads2triangles(quads::Common.Cells)::Lar.Cells
 	pairs = [[ Int[v1,v2,v3], Int[v3,v4,v1]] for (v1,v2,v3,v4) in quads ]
 	return CAT(pairs)
 end

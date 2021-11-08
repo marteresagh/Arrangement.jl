@@ -1,11 +1,11 @@
 # Arrangement per il 2D
 # input vertici e spigoli.
 function arrange2D(V, EV)
-    copEW = Lar.lar2cop(EV)
+    copEW = lar2cop(EV)
     V_by_row = permutedims(V)
 
     # da qui in poi i vertici sono per righe
-    T, copET, copFE = TGW.planar_arrangement(V_by_row, copEW)
+    T, copET, copFE = planar_arrangement(V_by_row, copEW)
 
     ETs, FTs = get_topology(permutedims(T),copET,copFE)
     return permutedims(T), ETs, FTs
@@ -23,22 +23,22 @@ returns the full arranged complex `V`, `EV` and `FE`.
 - `return_edge_map::Bool`: makes the function return also an `edge_map` which maps the edges of the imput to the one of the output. Defaults to `false`.
 - `multiproc::Bool`: Runs the computation in parallel mode. Defaults to `false`.
 """
-function planar_arrangement(V::Lar.Points, copEV::Lar.ChainOp; sigma::Lar.Chain=Lar.spzeros(Int8, 0))
+function planar_arrangement(V::Common.Points, copEV::Common.ChainOp; sigma::Common.Chain=SparseArrays.spzeros(Int8, 0))
     # V_by_row
 
     # planar graph
-    V, copEV, edge_map = TGW.create_planar_graph(V, copEV)
+    V, copEV, edge_map = create_planar_graph(V, copEV)
 
     # cleandecomposition
 
     if sigma.n > 0
-        V,copEV = TGW.cleandecomposition(V, copEV, sigma, edge_map)
+        V,copEV = cleandecomposition(V, copEV, sigma, edge_map)
     end
 
 
 
     # biconnected components
-    bicon_comps = TGW.biconnected_components(copEV)
+    bicon_comps = biconnected_components(copEV)
 
     if !isempty(bicon_comps)
 
@@ -49,7 +49,7 @@ function planar_arrangement(V::Lar.Points, copEV::Lar.ChainOp; sigma::Lar.Chain=
             componentgraph(V, EVs, bicon_comps, shells, boundaries)
 
 
-        copEV, copFE = TGW.cell_merging(
+        copEV, copFE = cell_merging(
             containment_graph,
             V,
             EVs,
@@ -66,6 +66,10 @@ function planar_arrangement(V::Lar.Points, copEV::Lar.ChainOp; sigma::Lar.Chain=
     end
 end
 
+
+"""
+get topology
+"""
 function get_topology(T,copET, copFE)
 
     ETs = Lar.FV2EVs(copET, copFE) # polygonal face fragments
@@ -80,6 +84,10 @@ function get_topology(T,copET, copFE)
     return ETs, FTs
 end
 
+
+"""
+get_planar_graph
+"""
 function get_planar_graph(V, EV)
     cop_EV = Lar.coboundary_0(EV)
     copEW = convert(Lar.ChainOp, cop_EV)

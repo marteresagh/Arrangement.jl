@@ -1,0 +1,7 @@
+name = "Arrangement"
+uuid = "46d80569-6bfc-4a90-a66c-363c5a2d2fcf"
+authors = ["marteresagh <marteresa28@gmail.com>"]
+version = "0.1.0"
+
+[deps]
+Common = "1e120bc2-2bd2-483a-9663-793997b3971f"

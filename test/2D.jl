@@ -4,7 +4,7 @@
 	EV = [[1,2],[2,3],[3,4],[4,1],[5,6],[6,7],[7,8],[8,5]]
 	# GL.VIEW([ GL.GLLines(V,EV) ])
 
-	T, ETs, FTs = TGW.arrange2D(V,EV)
+	T, ETs, FTs = Arrangement.arrange2D(V,EV)
 	# GL.VIEW(GL.GLExplode(T,FTs,1.,1.,1.,99,1));
 	@test size(T,2) == 10
 	@test length(ETs) == 3
@@ -19,7 +19,7 @@ end
 	EV = [[1,2],[2,3],[3,4],[4,1],[5,6],[6,7],[7,2],[2,5]]
 	# GL.VIEW([ GL.GLLines(V,EV) ])
 
-	T, ETs, FTs = TGW.arrange2D(V,EV)
+	T, ETs, FTs = Arrangement.arrange2D(V,EV)
 	# GL.VIEW(GL.GLExplode(W,FWs,1.,1.,1.,99,1));
 	@test size(T,2) == 7
 	@test length(ETs) == 2
@@ -33,7 +33,7 @@ end
 	EV = [[1,2],[2,3],[3,4],[4,5],[5,6],[6,1],[5,2],[7,8]]
 	# GL.VIEW([ GL.GLLines(V,EV) ])
 
-	T, ETs, FTs = TGW.arrange2D(V,EV)
+	T, ETs, FTs = Arrangement.arrange2D(V,EV)
 	# GL.VIEW(GL.GLExplode(W,FWs,1.,1.,1.,99,1));
 	@test size(T,2) == 6
 	@test length(ETs) == 2
@@ -47,7 +47,7 @@ end
 	EV = [[1,2],[2,3],[3,4],[4,5],[5,6],[6,1],[5,2],[4,9],[9,8],[8,7],[7,6],[8,5]]
 	# GL.VIEW([ GL.GLLines(V,EV) ])
 
-	T, ETs, FTs = TGW.arrange2D(V,EV)
+	T, ETs, FTs = Arrangement.arrange2D(V,EV)
 	# GL.VIEW(GL.GLExplode(W,FWs,1.,1.,1.,99,1));
 	@test size(T,2) == 9
 	@test length(ETs) == 4
@@ -61,7 +61,7 @@ end
 	EV = [[1,2],[2,3],[3,4],[4,1],[5,6],[6,7],[7,8],[8,5]]
 	# GL.VIEW([ GL.GLLines(V,EV) ])
 
-	T, ETs, FTs = TGW.arrange2D(V,EV)
+	T, ETs, FTs = Arrangement.arrange2D(V,EV)
 	# GL.VIEW(GL.GLExplode(W,FWs,1.,1.,1.,99,1));
 	@test size(T,2) == 8
 	@test length(ETs) == 2
@@ -75,7 +75,7 @@ end
 	EV = [[1,2],[2,3],[3,4],[4,1],[5,6],[7,8]]
 	# GL.VIEW([ GL.GLLines(V,EV) ])
 
-	T, ETs, FTs = TGW.arrange2D(V,EV)
+	T, ETs, FTs = Arrangement.arrange2D(V,EV)
 	# GL.VIEW(GL.GLExplode(T,ETs,1.,1.,1.,99,1));
 	@test size(T,2) == 13 # sono 9 vertici utilizzati però TODO da modificare ??
 	@test length(ETs) == 4
@@ -89,7 +89,7 @@ end
 	EV = [[1,2],[2,3],[3,4],[4,1],[5,6],[6,7],[7,8],[8,5], [9,10],[10,11],[11,12],[12,9]]
 	GL.VIEW([ GL.GLLines(V,EV) ])
 
-	T, ETs, FTs = TGW.arrange2D(V,EV)
+	T, ETs, FTs = Arrangement.arrange2D(V,EV)
 	# GL.VIEW(GL.GLExplode(T,FTs,1.,1.,1.,99,1));
 	@test size(T,2) == 14
 	@test length(ETs) == 4
@@ -103,7 +103,7 @@ end
 	EV = [[1,2],[2,3],[3,4],[4,1],[5,6],[6,7],[7,8],[8,5],[5,7]]
 	# GL.VIEW([ GL.GLLines(V,EV) ])
 
-	T, ETs, FTs = TGW.arrange2D(V,EV)
+	T, ETs, FTs = Arrangement.arrange2D(V,EV)
 	# GL.VIEW(GL.GLExplode(T,FTs,1.5,1.5,1.5,99,1));
 	@test size(T,2) == 8
 	@test length(ETs) == 3
@@ -119,7 +119,7 @@ end
 		EV = [[1,2],[2,3],[3,4],[4,1],[5,6],[6,7],[7,5],[6,8],[7,8]]
 		# GL.VIEW([ GL.GLLines(V,EV) ])
 
-		T, ETs, FTs = TGW.arrange2D(V,EV)
+		T, ETs, FTs = Arrangement.arrange2D(V,EV)
 		# GL.VIEW(GL.GLExplode(T,FTs,1.5,1.5,1.5,99,1));
 		@test size(T,2) == 8
 		@test length(ETs) == 3
@@ -134,7 +134,7 @@ end
 
 		# GL.VIEW([ GL.GLLines(V,EV) ])
 
-		T, ETs, FTs = TGW.arrange2D(V,EV)
+		T, ETs, FTs = Arrangement.arrange2D(V,EV)
 		# GL.VIEW(GL.GLExplode(T,FTs,1.,1.,1.,99,1));
 		@test size(T,2) == 7
 		@test length(ETs) == 2
@@ -149,7 +149,7 @@ end
 
 		# GL.VIEW([ GL.GLLines(V,EV) ])
 
-		T, ETs, FTs = TGW.arrange2D(V,EV)
+		T, ETs, FTs = Arrangement.arrange2D(V,EV)
 		# GL.VIEW(GL.GLExplode(W,FWs,1.,1.,1.,99,1));
 		@test size(T,2) == 7
 		@test length(ETs) == 2
@@ -164,7 +164,7 @@ end
 		EV = [[1,2],[2,3],[3,4],[4,1],[5,6],[6,7],[7,5]]
 		# GL.VIEW([ GL.GLLines(V,EV) ])
 
-		T, ETs, FTs = TGW.arrange2D(V,EV)
+		T, ETs, FTs = Arrangement.arrange2D(V,EV)
 		# GL.VIEW(GL.GLExplode(W,FWs,1.,1.,1.,99,1));
 		@test size(T,2) == 7
 		@test length(ETs) == 2
