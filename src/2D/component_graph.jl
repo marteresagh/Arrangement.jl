@@ -7,7 +7,7 @@ function componentgraph(V, EVs, bicon_comps, shells, boundaries)
 
     function containment_test(V, EVs, shells, bboxes)
         n = length(bboxes)
-        containment_graph = Lar.spzeros(Int8, n, n)
+        containment_graph = SparseArrays.spzeros(Int8, n, n)
 
         # si potrebbe migliorare questa parte mettendo in colonna tutti i cicli e in riga tutte le componenti biconnesse
         # così per il prossimo passaggio già so la componente in quale ciclo ricade
@@ -22,7 +22,7 @@ function componentgraph(V, EVs, bicon_comps, shells, boundaries)
                     for an_edge in shell.nzind
                         origin_index = EV[an_edge, :].nzind[1]
                         origin = V[origin_index, :]
-                        if TGW.pointInPolygonClassification(V, ev)(origin) ==
+                        if pointInPolygonClassification(V, ev)(origin) ==
                            "p_out"
                             containment_graph[i, j] = 0
                             break
@@ -50,7 +50,7 @@ function componentgraph(V, EVs, bicon_comps, shells, boundaries)
                 end
             end
         end
-        Lar.dropzeros!(graph)
+        SparseArrays.dropzeros!(graph)
     end
 
     #  calcola il grafo di contenimento tra componenti biconnesse

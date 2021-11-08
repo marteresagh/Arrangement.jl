@@ -1,10 +1,10 @@
 """
     biconnected_components(EV::Lar.ChainOp)
-    
+
 Compute the biconnected components of the `EV` graph, represented
 by edges as pairs of vertices.
 """
-function biconnected_components(EV::Lar.ChainOp)
+function biconnected_components(EV::Common.ChainOp)
 
     ps = Array{Tuple{Int, Int, Int}, 1}()
     es = Array{Tuple{Int, Int}, 1}()

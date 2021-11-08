@@ -5,9 +5,9 @@ function cycle_basis(V,copEV,bicon_comps)
     # 2. calcola il ciclo esterno per ogni componente biconnessa
 
     n_of_comps = length(bicon_comps)
-    shells = Array{Lar.Chain,1}(undef, n_of_comps)
-    boundaries = Array{Lar.ChainOp,1}(undef, n_of_comps)
-    EVs = Array{Lar.ChainOp,1}(undef, n_of_comps)
+    shells = Array{Common.Chain,1}(undef, n_of_comps)
+    boundaries = Array{Common.ChainOp,1}(undef, n_of_comps)
+    EVs = Array{Common.ChainOp,1}(undef, n_of_comps)
     # for each component
     for p = 1:n_of_comps
         ev = copEV[sort(bicon_comps[p]), :]
@@ -28,7 +28,7 @@ function cycle_basis(V,copEV,bicon_comps)
 end
 
 
-function minimal_2cycles(V::Lar.Points, EV::Lar.ChainOp)
+function minimal_2cycles(V::Common.Points, EV::Common.ChainOp)
 
     function edge_angle(v::Int, e::Int)
         edge = EV[e, :]
@@ -45,13 +45,13 @@ function minimal_2cycles(V::Lar.Points, EV::Lar.ChainOp)
     VE = convert(Lar.ChainOp, Lar.SparseArrays.transpose(EV))
     EF = minimal_cycles(edge_angle)(V, VE)
 
-    return convert(Lar.ChainOp, Lar.SparseArrays.transpose(EF))
+    return convert(Common.ChainOp, Common.SparseArrays.transpose(EF))
 end
 
 ## calcola i cicli minimi e la cella esterna
 function minimal_cycles(angles_fn::Function, verbose = true)
 
-    function _minimal_cycles(V::Lar.Points, ld_bounds::Lar.ChainOp)  # (V , VE)
+    function _minimal_cycles(V::Common.Points, ld_bounds::Common.ChainOp)  # (V , VE)
 
         function get_seed_cell()
             s = -1 # se ritorna questo esce dal loop
@@ -104,7 +104,7 @@ function minimal_cycles(angles_fn::Function, verbose = true)
         # ld sono gli spigoli
         count_marks = zeros(Int64, ld_cellsnum) # quante volte ho visitato lo spigolo (fino a due volte posso visitarlo)
         dir_marks = zeros(Int64, ld_cellsnum) # direzione di visita degli spigoli
-        d_bounds = Lar.spzeros(Int64, ld_cellsnum, 0) # cicli trovati inizialmente zero
+        d_bounds = Common.spzeros(Int64, ld_cellsnum, 0) # cicli trovati inizialmente zero
         angles = Array{Array{Int64,1},1}(undef, lld_cellsnum)
 
         # calcola tutti gli angoli in precedenza,
@@ -132,7 +132,7 @@ function minimal_cycles(angles_fn::Function, verbose = true)
                 print(Int(floor(50 * sum(count_marks) / ld_cellsnum)), "%\r") # <<<<<<<<<<<<<<<<<<<
             end
 
-            c_ld = Lar.spzeros(Int8, ld_cellsnum)
+            c_ld = Common.spzeros(Int8, ld_cellsnum)
             if count_marks[sigma] == 0
                 c_ld[sigma] = 1
             else
@@ -145,7 +145,7 @@ function minimal_cycles(angles_fn::Function, verbose = true)
 
             while c_lld.nzind != [] #processa finchè non esistono più punti sul boundary
                 # when looping, loops here !! perchè non si svuota mai
-                corolla = Lar.spzeros(Int64, ld_cellsnum)
+                corolla = Common.spzeros(Int64, ld_cellsnum)
                 #corolla = zeros(Int64, ld_cellsnum)
 
                 println("bordo della catena", c_lld)
@@ -207,9 +207,9 @@ end
 
 
 # in base all'area identifica quale sia la cella esterna
-function get_external_cycle(V::Lar.Points, EV::Lar.ChainOp, FE::Lar.ChainOp)
+function get_external_cycle(V::Common.Points, EV::Common.ChainOp, FE::Common.ChainOp)
     FV = abs.(FE) * EV
-    vs = Lar.sparsevec(mapslices(sum, abs.(EV), dims = 1)').nzind
+    vs = Common.sparsevec(mapslices(sum, abs.(EV), dims = 1)').nzind
     minv_x1 = maxv_x1 = minv_x2 = maxv_x2 = pop!(vs)
     for i in vs
         if V[i, 1] > V[maxv_x1, 1]

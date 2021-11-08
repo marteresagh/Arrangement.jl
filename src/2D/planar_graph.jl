@@ -5,12 +5,12 @@ function create_planar_graph(V, copEV)
     # data structures initialization
     edgenum = size(copEV, 1)
     edge_map = Array{Array{Int,1},1}(undef, edgenum)
-    rV = Lar.Points(zeros(0, 2))
-    rEV = Lar.SparseArrays.spzeros(Int8, 0, 0)
+    rV = Common.Points(zeros(0, 2))
+    rEV = Common.SparseArrays.spzeros(Int8, 0, 0)
     finalcells_num = 0
 
     # spaceindex computation TODO questo lo porterei fuori
-    model = (permutedims(V), Lar.cop2lar(copEV))
+    model = (permutedims(V), cop2lar(copEV))
     bigPI = spaceindex(model)
 
     for i = 1:edgenum
@@ -50,7 +50,7 @@ function frag_edge(V, EV::Lar.ChainOp, edge_idx::Int, bigPI)
     alphas_keys = sort(collect(keys(alphas)))
     edge_num = length(alphas_keys) - 1
     verts_num = size(verts, 1)
-    ev = Lar.SparseArrays.spzeros(Int8, edge_num, verts_num)
+    ev = Common.SparseArrays.spzeros(Int8, edge_num, verts_num)
     for i = 1:edge_num
         ev[i, alphas[alphas_keys[i]]] = 1
         ev[i, alphas[alphas_keys[i+1]]] = 1
@@ -63,7 +63,7 @@ end
     intersect_edges(V::Lar.Points, edge1::Lar.Cell, edge2::Lar.Cell)
 Intersect two 2D edges (`edge1` and `edge2`).
 """
-function intersect_edges(V::Lar.Points, edge1::Lar.Cell, edge2::Lar.Cell)
+function intersect_edges(V::Common.Points, edge1::Common.Cell, edge2::Common.Cell)
     err = 10e-8
 
     x1, y1, x2, y2 = vcat(map(c -> V[c, :], edge1.nzind)...)
@@ -73,8 +73,8 @@ function intersect_edges(V::Lar.Points, edge1::Lar.Cell, edge2::Lar.Cell)
     v1 = [x2 - x1, y2 - y1]
     v2 = [x4 - x3, y4 - y3]
     v3 = [x3 - x1, y3 - y1]
-    ang1 = Lar.dot(Lar.LinearAlgebra.normalize(v1), Lar.LinearAlgebra.normalize(v2))
-    ang2 = Lar.dot(Lar.LinearAlgebra.normalize(v1), Lar.LinearAlgebra.normalize(v3))
+    ang1 = Common.dot(LinearAlgebra.normalize(v1), LinearAlgebra.normalize(v2))
+    ang2 = Common.dot(LinearAlgebra.normalize(v1), LinearAlgebra.normalize(v3))
     parallel = 1 - err < abs(ang1) < 1 + err
     colinear =
         parallel && (1 - err < abs(ang2) < 1 + err || -err < Lar.norm(v3) < err)
@@ -84,7 +84,7 @@ function intersect_edges(V::Lar.Points, edge1::Lar.Cell, edge2::Lar.Cell)
         alpha = 1 / Lar.dot(v, v')
         ps = [x3 y3; x4 y4]
         for i = 1:2
-            a = alpha * Lar.dot(v', (reshape(ps[i, :], 1, 2) - o))
+            a = alpha * Common.dot(v', (reshape(ps[i, :], 1, 2) - o))
             if 0 < a < 1
                 push!(ret, (ps[i:i, :], a))
             end
@@ -107,20 +107,20 @@ end
     merge_vertices!(V::Lar.Points, EV::Lar.ChainOp, edge_map, err=1e-4)
 Merge congruent vertices and edges in `V` and `EV`.
 """
-function merge_vertices!(V::Lar.Points, EV::Lar.ChainOp, edge_map, err = 1e-4)
+function merge_vertices!(V::Common.Points, EV::Common.ChainOp, edge_map, err = 1e-4)
     vertsnum = size(V, 1)
     edgenum = size(EV, 1)
     newverts = zeros(Int, vertsnum)
     # KDTree constructor needs an explicit array of Float64
     V = Array{Float64,2}(V)
-    kdtree = Lar.KDTree(permutedims(V))
+    kdtree = KDTree(permutedims(V))
 
     # merge congruent vertices
     todelete = []
     i = 1
     for vi = 1:vertsnum
         if !(vi in todelete)
-            nearvs = Lar.inrange(kdtree, V[vi, :], err)
+            nearvs = inrange(kdtree, V[vi, :], err)
             newverts[nearvs] .= i
             nearvs = setdiff(nearvs, vi)
             todelete = union(todelete, nearvs)
@@ -156,7 +156,7 @@ function merge_vertices!(V::Lar.Points, EV::Lar.ChainOp, edge_map, err = 1e-4)
         edge_map[i] = row
     end
     # return new vertices and new edges
-    return Lar.Points(nV), nEV
+    return Common.Points(nV), nEV
 end
 
 
@@ -195,7 +195,7 @@ Sigma =  spaceindex(model3d);
 Sigma
 ```
 """
-function spaceindex(model::Lar.LAR)::Array{Array{Int,1},1}
+function spaceindex(model::Common.LAR)::Array{Array{Int,1},1}
     V, CV = model[1:2]
     dim = size(V, 1)
     cellpoints = [V[:, CV[k]]::Lar.Points for k = 1:length(CV)]
@@ -204,11 +204,11 @@ function spaceindex(model::Lar.LAR)::Array{Array{Int,1},1}
     xboxdict = Lar.coordintervals(1, bboxes)
     yboxdict = Lar.coordintervals(2, bboxes)
     # xs,ys are IntervalTree type
-    xs = Lar.IntervalTrees.IntervalMap{Float64,Array}()
+    xs = IntervalTrees.IntervalMap{Float64,Array}()
     for (key, boxset) in xboxdict
         xs[tuple(key...)] = boxset
     end
-    ys = Lar.IntervalTrees.IntervalMap{Float64,Array}()
+    ys = IntervalTrees.IntervalMap{Float64,Array}()
     for (key, boxset) in yboxdict
         ys[tuple(key...)] = boxset
     end
@@ -217,8 +217,8 @@ function spaceindex(model::Lar.LAR)::Array{Array{Int,1},1}
     covers = [intersect(pair...) for pair in zip(xcovers, ycovers)]
 
     if dim == 3
-        zboxdict = Lar.coordintervals(3, bboxes)
-        zs = Lar.IntervalTrees.IntervalMap{Float64,Array}()
+        zboxdict = coordintervals(3, bboxes)
+        zs = IntervalTrees.IntervalMap{Float64,Array}()
         for (key, boxset) in zboxdict
             zs[tuple(key...)] = boxset
         end
