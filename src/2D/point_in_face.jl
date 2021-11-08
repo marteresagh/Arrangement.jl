@@ -1,3 +1,13 @@
+
+"""
+    point_in_face(point, V::Points, copEV::ChainOp)
+Check if `point` is inside the area of the face bounded by the edges in `copEV`
+"""
+function point_in_face(point, V::Common.Points, copEV::Common.ChainOp)
+    return pointInPolygonClassification(V, copEV)(point) == "p_in"
+end
+
+
 function pointInPolygonClassification(V, EV)
 
     function crossingTest(new, old, status, count)

@@ -5,3 +5,5 @@ version = "0.1.0"
 
 [deps]
 Common = "1e120bc2-2bd2-483a-9663-793997b3971f"
+IntervalTrees = "524e6230-43b7-53ae-be76-1e9e4d08d11b"
+Triangulate = "f7e6ffb2-c36d-4f8f-a77e-16e897189344"

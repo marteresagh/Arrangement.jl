@@ -1,6 +1,7 @@
 module Arrangement
 
     using Common
+    using Triangulate
     # using LinearAlgebraicRepresentation
     # Lar = LinearAlgebraicRepresentation
     # using ViewerGL

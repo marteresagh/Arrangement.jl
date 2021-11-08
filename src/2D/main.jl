@@ -72,12 +72,12 @@ get topology
 """
 function get_topology(T,copET, copFE)
 
-    ETs = Lar.FV2EVs(copET, copFE) # polygonal face fragments
+    ETs = FV2EVs(copET, copFE) # polygonal face fragments
 
     FTs = []
     for i = 1:length(ETs)
         EV = ETs[i]
-        FV = Lar.triangulate2d(T, EV)
+        FV = triangulate2d(T, EV)
         push!(FTs, FV)
     end
 
@@ -93,7 +93,7 @@ function get_planar_graph(V, EV)
     copEW = convert(Lar.ChainOp, cop_EV)
     W = convert(Lar.Points, V')
 
-    T, copET = TGW.create_planar_graph(W, copEW)
+    T, copET = create_planar_graph(W, copEW)
     ET = Lar.cop2lar(copET)
 
     return permutedims(T), ET
