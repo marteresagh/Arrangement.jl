@@ -1,4 +1,5 @@
-using TGW
+using Arrangement
+using Visualization
 
 V = [
     0.0 0.0 0.0 0.0 2.0 2.0 2.0 2.0 -2.0 -2.0 3.0 3.0 1.0 1.0
@@ -38,7 +39,7 @@ FV = [
     [9, 10, 11, 12],
     [9, 10, 13, 14],
 ]
-GL.VIEW([GL.GLLines(V, EV)])
+Visualization.VIEW([Visualization.GLLines(V, EV)])
 #
 # V = [
 #     0.0 0.0 0.0 0.0 2.0 2.0 2.0 2.0 -2.0 -2.0 3.0 3.0 1.0 1.0
@@ -79,7 +80,7 @@ GL.VIEW([GL.GLLines(V, EV)])
 #     [9,10,13,14]
 #
 # ]
-GL.VIEW([GL.GLLines(V, EV)])
+Visualization.VIEW([Visualization.GLLines(V, EV)])
 ########################################################
 ### codice riga per riga
 
@@ -96,8 +97,8 @@ larFE = Lar.cop2lar(rcopFE)
 
 
 model = (permutedims(rV), [larTT, larET]);
-meshes = GL.numbering(1.0)(model, GL.COLORS[1], 0.1);
-GL.VIEW(meshes)
+meshes = Visualization.numbering(1.0)(model, Visualization.COLORS[1], 0.1);
+Visualization.VIEW(meshes)
 #
 # FV = [[1, 3, 5, 7]
 #  [2, 4, 6, 7]
@@ -203,10 +204,10 @@ rcopCF = TGW.minimal_3cycles(rV, rcopEV, rcopFE)
 ######################################################
 T, ETs, FTs, CTs = TGW.Lar_arrangement3D(V, EV, FV);
 T, ETs, FTs, CTs = TGW.arrange3D(V, EV, FV)
-GL.VIEW(GL.GLExplode(T, ETs, 1.1, 1.1, 1.1, 99, 1));
-GL.VIEW(GL.GLExplode(T, FTs, 1.1, 1.1, 1.1, 99, 1));
+Visualization.VIEW(Visualization.GLExplode(T, ETs, 1.1, 1.1, 1.1, 99, 1));
+Visualization.VIEW(Visualization.GLExplode(T, FTs, 1.1, 1.1, 1.1, 99, 1));
 for i = 1:length(CTs)
-    GL.VIEW(GL.GLExplode(T, [CTs[i]], 1.1, 1.1, 1.1, 99, 0.2))
+    Visualization.VIEW(Visualization.GLExplode(T, [CTs[i]], 1.1, 1.1, 1.1, 99, 0.2))
 end
 
 

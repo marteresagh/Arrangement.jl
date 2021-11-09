@@ -1,4 +1,5 @@
-using TGW
+using Arrangement
+using Visualization
 
 V = [
     0.0 0.0 0.0 0.0 2.0 2.0 2.0 2.0
@@ -30,36 +31,13 @@ FV = [
     [2, 4, 6, 8]
 ]
 
-GL.VIEW([GL.GLLines(V, EV)])
+Visualization.VIEW([Visualization.GLLines(V, EV)])
 
-### codice riga per riga
-
-cop_EV = Lar.coboundary_0(EV)
-cop_FE = Lar.coboundary_1(V, FV, EV)
-W = permutedims(V)
-
-rV, rcopEV, rcopFE = TGW.get_model_intersected(W, cop_EV, cop_FE)
+T, ET, ETs, FT, FTs = Arrangement.model_intersection(V, EV, FV)
 
 
-larTT = [[i] for i = 1:size(rV, 1)]
-larET = Lar.cop2lar(rcopEV)
-larFE = Lar.cop2lar(rcopFE)
-
-
-model = (permutedims(rV), [larTT, larET,FV]);
-meshes = GL.numbering(1.0)(model, GL.COLORS[1], 0.1);
-GL.VIEW(meshes)
-
-rcopCF = TGW.minimal_3cycles(rV, rcopEV, rcopFE)
-
-######################################################
-# T, ETs, FTs, CTs = TGW.Lar_arrangement3D(V, EV, FV);
-T, ETs, FTs, CTs = TGW.arrange3D(V, EV, FV)
-GL.VIEW(GL.GLExplode(T, ETs, 1.1, 1.1, 1.1, 99, 1));
-GL.VIEW(GL.GLExplode(T, FTs, 1.1, 1.1, 1.1, 99, 1));
-for i = 1:length(CTs)
-    GL.VIEW(GL.GLExplode(T, [CTs[i]], 1.1, 1.1, 1.1, 99, 0.2))
-end
+Visualization.VIEW(Visualization.GLExplode(T, ETs, 1.0, 1.0, 1.0, 99, 1));
+Visualization.VIEW(Visualization.GLExplode(T, FTs, 1.0, 1.0, 1.0, 99, 1));
 
 ##############################   facce intersecate in un cubo
 V = [
@@ -104,39 +82,10 @@ FV = [
     [21, 22, 24, 23]
 ]
 
-GL.VIEW([GL.GLGrid(V, FV)])
-GL.VIEW([GL.GLLines(V, EV)])
-
-### codice riga per riga
-
-cop_EV = Lar.coboundary_0(EV)
-cop_FE = Lar.coboundary_1(V, FV, EV)
-W = permutedims(V)
-
-rV, rcopEV, rcopFE = TGW.get_model_intersected(W, cop_EV, cop_FE)
+Visualization.VIEW([Visualization.GLGrid(V, FV)])
+Visualization.VIEW([Visualization.GLLines(V, EV)])
+T, ET, ETs, FT, FTs = Arrangement.model_intersection(V, EV, FV)
 
 
-larTT = [[i] for i = 1:size(rV, 1)]
-larET = Lar.cop2lar(rcopEV)
-larFE = Lar.cop2lar(rcopFE)
-
-
-model = (permutedims(rV), [larTT, larET]);
-meshes = GL.numbering(1.0)(model, GL.COLORS[1], 0.1);
-GL.VIEW(meshes)
-
-
-
-copCF = TGW.minimal_3cycles(rV, rcopEV, rcopFE)
-
-######################################################
-T, ETs, FTs, CTs = TGW.Lar_arrangement3D(V, EV, FV);
-# T, ETs, FTs, CTs = TGW.arrange3D(V, EV, FV)
-GL.VIEW(GL.GLExplode(T, ETs, 1.1, 1.1, 1.1, 99, 1));
-GL.VIEW(GL.GLExplode(T, FTs, 1.1, 1.1, 1.1, 99, 1));
-for i = 1:length(CTs)
-    GL.VIEW(GL.GLExplode(T, [CTs[i]], 1.1, 1.1, 1.1, 99, 0.2))
-end
-
-
-TGW.biconnected_components(rcopFE)
+Visualization.VIEW(Visualization.GLExplode(T, ETs, 1.0, 1.0, 1.0, 99, 1));
+Visualization.VIEW(Visualization.GLExplode(T, FTs, 1.0, 1.0, 1.0, 99, 1));

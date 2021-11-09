@@ -1,5 +1,5 @@
-using TGW
-
+using Arrangement
+using Visualization
 # store = [];
 # V1, (VV1, EV1, FV1, CV1) = Lar.cuboid([2.0, 2.0, 2.0], true, [0.0, 0.0, 0.0]);
 # V2, (VV2, EV2, FV2, CV2) = Lar.cuboid([2.0, 1.5, 1.5], true, [0.5, 0.5, 0.5]);
@@ -70,38 +70,8 @@ FV = [
 
 ]
 
+T, ET, ETs, FT, FTs = Arrangement.model_intersection(V, EV, FV)
 
 
-cop_EV = Lar.coboundary_0(EV)
-cop_FE = Lar.coboundary_1(V, FV, EV)
-W = permutedims(V)
-
-T,ET,FE = TGW.get_model_intersected(W, cop_EV, cop_FE)
-
-larET = Lar.cop2lar(ET)
-larFE = Lar.cop2lar(FE)
-ETs = Lar.FV2EVs(ET, FE)
-GL.VIEW([
-    GL.GLFrame,
-    GL.GLExplode(permutedims(T), ETs, 1.1, 1.1, 1.1, 99, 1)...,
-]);
-
-
-
-
-
-
-
-
-T, ETs, FTs, CTs = TGW.Lar_arrangement3D(V, EV, FV);
-
-GL.VIEW(GL.GLExplode(T, FTs, 1.1, 1.1, 1.1, 99, 1));
-GL.VIEW(GL.GLExplode(T, ETs, 1.5, 1.5, 1.5, 99, 1));
-GL.VIEW(GL.GLExplode(T, [CTs[4]], 1.2, 1.2, 1.2, 99, 0.8));
-
-
-
-T, ETs, FTs, CTs = TGW.arrange3D(V, EV, FV)
-GL.VIEW(GL.GLExplode(T, ETs, 1.1, 1.1, 1.1, 99, 1));
-GL.VIEW(GL.GLExplode(T, FTs, 1.1, 1.1, 1.1, 99, 1));
-GL.VIEW(GL.GLExplode(T, CTs, 1.1, 1.1, 1.1, 99, 1));
+Visualization.VIEW(Visualization.GLExplode(T, ETs, 1.0, 1.0, 1.0, 99, 1));
+Visualization.VIEW(Visualization.GLExplode(T, FTs, 1.0, 1.0, 1.0, 99, 1));

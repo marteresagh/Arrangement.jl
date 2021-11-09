@@ -53,8 +53,8 @@ Visualization.VIEW(Visualization.GLExplode(T,ETs,1.3,1.3,1.3,99,1));
 V = [0. 4. 4. 0. 4. 3. 2. 1.;
          0. 0. 4. 4. 2. 3. 1. 1.]
 EV = [[1,2],[2,3],[3,4],[4,1],[5,6],[6,7],[7,5],[6,8],[7,8]]
-GL.VIEW([ GL.GLLines(V,EV) ])
+Visualization.VIEW([ Visualization.GLLines(V,EV) ])
 
-T, ETs, FTs = TGW.arrange2D(V,EV)
-GL.VIEW(GL.GLExplode(T,FTs,1.3,1.3,1.3,99,1));
-GL.VIEW(GL.GLExplode(T,ETs,1.3,1.3,1.3,99,1));
+T, ETs, FTs = Arrangement.arrange2D(V,EV)
+Visualization.VIEW(Visualization.GLExplode(T,FTs,1.3,1.3,1.3,99,1));
+Visualization.VIEW(Visualization.GLExplode(T,ETs,1.3,1.3,1.3,99,1));

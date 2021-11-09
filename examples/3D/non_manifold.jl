@@ -1,4 +1,5 @@
-using TGW
+using Arrangement
+using Visualization
 
 ### Esempio cubo con componente non_manifold
 ### intersezione va a buon fine
@@ -50,17 +51,17 @@ FV = [
 ]
 VV = [[i] for i in 1:size(V,2)]
 
-GL.VIEW([
-    GL.GLFrame,
-    GL.GLLines(V,EV),
+Visualization.VIEW([
+    Visualization.GLFrame,
+    Visualization.GLLines(V,EV),
 ]);
 
 
 ##############  calcolo delle intersezioni
-cop_EV = Lar.coboundary_0(EV)
-cop_FE = Lar.coboundary_1(V, FV, EV)
+cop_EV = Arrangement.coboundary_0(EV)
+cop_FE = Arrangement.coboundary_1(V, FV, EV)
 W = permutedims(V)
-T,ET,FE = TGW.get_model_intersected(W, cop_EV, cop_FE)
+T,ET,FE = Arrangement.get_model_intersected(W, cop_EV, cop_FE)
 
 larTT = [[i] for i in 1:size(T,1)]
 larET = Lar.cop2lar(ET)
@@ -68,13 +69,13 @@ larFE = Lar.cop2lar(FE)
 
 
 model = (permutedims(T), [larTT, larET]);
-meshes = GL.numbering(1.0)(model, GL.COLORS[1], 0.1);
-GL.VIEW(meshes)
+meshes = Visualization.numbering(1.0)(model, Visualization.COLORS[1], 0.1);
+Visualization.VIEW(meshes)
 
 
 ############ spigoli per ogni faccia
 ETs = Lar.FV2EVs(ET, FE)
-GL.VIEW(GL.GLExplode(permutedims(T), ETs, 1.1, 1.1, 1.1, 99, 1));
+Visualization.VIEW(Visualization.GLExplode(permutedims(T), ETs, 1.1, 1.1, 1.1, 99, 1));
 
 
 ########## base di cicli
@@ -87,4 +88,4 @@ FTs = Lar.FV2EVs(FE, CF)
 
 
 T0, CVs, FVs, EVs = Lar.pols2tria(permutedims(T), ET, FE, rcopCF[[1,3],:]) # whole assembly
-GL.VIEW(GL.GLExplode(T0, CVs, 1.1, 1.1, 1.1, 99, 1));
+Visualization.VIEW(Visualization.GLExplode(T0, CVs, 1.1, 1.1, 1.1, 99, 1));

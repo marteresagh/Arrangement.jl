@@ -91,7 +91,7 @@ get_planar_graph
 function get_planar_graph(V, EV)
     cop_EV = coboundary_0(EV)
     copEW = convert(Common.ChainOp, cop_EV)
-    W = pemutedims(V)
+    W = permutedims(V)
 
     T, copET = create_planar_graph(W, copEW)
     ET = cop2lar(copET)

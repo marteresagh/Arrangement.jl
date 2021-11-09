@@ -16,7 +16,7 @@ function minimal_3cycles(V::Lar.Points, EV::Lar.ChainOp, FE::Lar.ChainOp)
             end
 
             #vs = V[vs_idxs, :]
-            fv, edges = Lar.vcycle(EV, FE, f)
+            fv, edges = vcycle(EV, FE, f)
 
             vs = V[fv, :]
 

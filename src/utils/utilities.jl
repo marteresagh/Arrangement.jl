@@ -116,3 +116,60 @@ function coordintervals(coord,bboxes)
 	end
 	return boxdict
 end
+
+
+function affine_transformation(
+    normal::Array{Float64,1},
+    centroid::Array{Float64,1},
+)
+    normal /= Common.norm(normal)
+    a, b, c = normal
+    d = Common.dot(normal, centroid)
+    basis = Common.orthonormal_basis(normal...)
+    rot = Common.inv(basis)
+    matrix = Common.matrix4(rot)
+    matrix[1:3, 4] = rot * -centroid #apply_matrix(matrix,-centroid)
+    return matrix
+end
+
+
+"""
+    vin(vertex, vertices_set)
+Checks if `vertex` is one of the vertices inside `vertices_set`
+"""
+function vin(vertex, vertices_set)
+    for v in vertices_set
+        if vequals(vertex, v)
+            return true
+        end
+    end
+    return false
+end
+
+"""
+    vequals(v1, v2)
+Check the equality between vertex `v1` and vertex `v2`
+"""
+function vequals(v1, v2)
+    err = 10e-8
+    return length(v1) == length(v2) && all(map((x1, x2)->-err < x1-x2 < err, v1, v2))
+end
+
+
+# 
+# function vcycle( copEV::Lar.ChainOp, copFE::Lar.ChainOp, f::Int64 )
+# 	edges,signs = SparseArrays.findnz(copFE[f,:])
+# 	vpairs = [s>0 ? SparseArrays.findnz(copEV[e,:])[1] :
+# 					reverse(SparseArrays.findnz(copEV[e,:])[1])
+# 				for (e,s) in zip(edges,signs)]
+# 	a = [pair for pair in vpairs if length(pair)==2]
+# 	function mycat(a::Lar.Cells)
+# 		out=[]
+# 		for cell in a append!(out,cell) end
+# 		return out
+# 	end
+# 	vs = collect(Set(mycat(a)))
+# 	vdict = Dict(zip(vs,1:length(vs)))
+# 	edges = [[vdict[pair[1]], vdict[pair[2]]] for pair in vpairs if length(pair)==2]
+# 	return vs, edges
+# end

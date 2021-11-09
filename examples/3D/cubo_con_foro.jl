@@ -1,4 +1,5 @@
-using TGW
+using Arrangement
+using Visualization
 
 ### Esempio cubo con foro sulla faccia
 ### la base di cicli viene calcolata bene ma il programma sembra non essere concluso
@@ -54,42 +55,13 @@ FV = [
 ]
 
 
-GL.VIEW([
-    GL.GLFrame,
-    GL.GLLines(V,EV),
+Visualization.VIEW([
+    Visualization.GLFrame,
+    Visualization.GLLines(V,EV),
 ]);
 
-
-##############  calcolo delle intersezioni
-cop_EV = Lar.coboundary_0(EV)
-cop_FE = Lar.coboundary_1(V, FV, EV)
-W = permutedims(V)
-T,ET,FE = TGW.get_model_intersected(W, cop_EV, cop_FE)
-
-larTT = [[i] for i in 1:size(T,1)]
-larET = Lar.cop2lar(ET)
-larFE = Lar.cop2lar(FE)
+T, ET, ETs, FT, FTs = Arrangement.model_intersection(V, EV, FV)
 
 
-model = (permutedims(T), [larTT, larET]);
-meshes = GL.numbering(1.0)(model, GL.COLORS[1], 0.1);
-GL.VIEW(meshes)
-
-
-############ spigoli per ogni faccia
-ETs = Lar.FV2EVs(ET, FE)
-GL.VIEW(GL.GLExplode(permutedims(T), ETs, 1.1, 1.1, 1.1, 99, 1));
-
-
-########## base di cicli
-CF = TGW.minimal_3cycles(T,ET,FE)
-
-################### faccia per ogni cella
-FTs = Lar.FV2EVs(FE, CF)
-
-
-T0, CVs, FVs, EVs = Lar.pols2tria(permutedims(T), ET, FE, CF[[1,3],:]) # whole assembly
-GL.VIEW(GL.GLExplode(T0, [FVs[2]], 1.1, 1.1, 1.1, 99, 1));
-
-##################### REFACTOR pols2tria:
-## bisogna scrivere una funzione che triangola ma che poi elimina i triangoli dei buchi
+Visualization.VIEW(Visualization.GLExplode(T, ETs, 1.0, 1.0, 1.0, 99, 1));
+Visualization.VIEW(Visualization.GLExplode(T, FTs, 1.4, 1.4, 1.4, 99, 1));

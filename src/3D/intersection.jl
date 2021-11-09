@@ -11,22 +11,22 @@ function frag_face(V, EV, FE, sp_idx, sigma)
     sigmavs = (abs.(FE[sigma:sigma, :])*abs.(EV))[1, :].nzind
     sV = V[sigmavs, :]
     sEV = EV[FE[sigma, :].nzind, sigmavs]
-    M = Lar.Arrangement.submanifold_mapping(sV)
+    M = submanifold_mapping(sV)
     tV = ([V ones(vs_num)]*M)[:, 1:3]  # folle convertire *tutti* i vertici
     sV = tV[sigmavs, :]
     # sigma face intersection with faces in sp_idx[sigma]
     for i in sp_idx[sigma]
-        tmpV, tmpEV = Lar.Arrangement.face_int(tV, EV, FE[i, :])
+        tmpV, tmpEV = face_int(tV, EV, FE[i, :])
         sV, sEV
-        sV, sEV = Lar.skel_merge(sV, sEV, tmpV, tmpEV)
+        sV, sEV = skel_merge(sV, sEV, tmpV, tmpEV)
     end
 
     # computation of 2D arrangement of sigma face
     sV = sV[:, 1:2]
-    nV, nEV, nFE = TGW.planar_arrangement(
+    nV, nEV, nFE = planar_arrangement(
         sV,
         sEV;
-        sigma = Lar.sparsevec(ones(Int8, length(sigmavs))),
+        sigma = Common.sparsevec(ones(Int8, length(sigmavs))),
     )
     if nV == nothing ## not possible !! ... (each original face maps to its decomposition)
         return [], spzeros(Int8, 0, 0), spzeros(Int8, 0, 0)
@@ -38,9 +38,9 @@ function frag_face(V, EV, FE, sp_idx, sigma)
 end
 
 function merge_vertices(
-    V::Lar.Points,
-    EV::Lar.ChainOp,
-    FE::Lar.ChainOp,
+    V::Common.Points,
+    EV::Common.ChainOp,
+    FE::Common.ChainOp,
     err = 1e-4,
 )
     vertsnum = size(V, 1)
@@ -49,14 +49,14 @@ function merge_vertices(
     newverts = zeros(Int, vertsnum)
     # KDTree constructor needs an explicit array of Float64
     V = Array{Float64,2}(V)
-    W = convert(Lar.Points, Lar.LinearAlgebra.transpose(V))
-    kdtree = Lar.KDTree(W)
+    W = permutedims(V)
+    kdtree = KDTree(W)
     # remove vertices congruent to a single representative
     todelete = []
     i = 1
     for vi = 1:vertsnum
         if !(vi in todelete)
-            nearvs = Lar.inrange(kdtree, V[vi, :], err)
+            nearvs = inrange(kdtree, V[vi, :], err)
             newverts[nearvs] .= i
             nearvs = setdiff(nearvs, vi)
             todelete = union(todelete, nearvs)
@@ -78,7 +78,7 @@ function merge_vertices(
     # remove edges of zero length
     nedges = filter(t -> t[1] != t[2], nedges)
     nedgenum = length(nedges)
-    nEV = Lar.spzeros(Int8, nedgenum, size(nV, 1))
+    nEV = Common.spzeros(Int8, nedgenum, size(nV, 1))
 
     etuple2idx = Dict{Tuple{Int,Int},Int}()
     for ei = 1:nedgenum
@@ -89,7 +89,7 @@ function merge_vertices(
         etuple2idx[nedges[ei]] = ei
     end
     for e = 1:nedgenum
-        v1, v2 = Lar.findnz(nEV[e, :])[1]
+        v1, v2 = Common.findnz(nEV[e, :])[1]
         nEV[e, v1] = -1
         nEV[e, v2] = 1
     end
@@ -122,7 +122,7 @@ function merge_vertices(
     nfaces = filter(filter_fn, faces)
 
     nfacenum = length(nfaces)
-    nFE = Lar.spzeros(Int8, nfacenum, size(nEV, 1))
+    nFE = Common.spzeros(Int8, nfacenum, size(nEV, 1))
 
     for fi = 1:nfacenum
         for edge in nfaces[fi]
@@ -131,22 +131,21 @@ function merge_vertices(
         end
     end
 
-    return Lar.Points(nV), nEV, nFE
+    return Common.Points(nV), nEV, nFE
 end
-
 
 
 function get_model_intersected(V, EV, FE)
     fs_num = size(FE, 1)
-    sp_idx = Lar.Arrangement.spatial_index(V, EV, FE)
+    sp_idx = spatial_index(V, EV, FE)
 
-    rV = Lar.Points(undef, 0, 3)
-    rEV = Lar.SparseArrays.spzeros(Int8, 0, 0)
-    rFE = Lar.SparseArrays.spzeros(Int8, 0, 0)
+    rV = Common.Points(undef, 0, 3)
+    rEV = Common.spzeros(Int8, 0, 0)
+    rFE = Common.spzeros(Int8, 0, 0)
 
     depot_V = Array{Array{Float64,2},1}(undef, fs_num)
-    depot_EV = Array{Lar.ChainOp,1}(undef, fs_num)
-    depot_FE = Array{Lar.ChainOp,1}(undef, fs_num)
+    depot_EV = Array{Common.ChainOp,1}(undef, fs_num)
+    depot_FE = Array{Common.ChainOp,1}(undef, fs_num)
     for sigma = 1:fs_num
         print(sigma, "/", fs_num, "\r")
         nV, nEV, nFE = frag_face(V, EV, FE, sp_idx, sigma)
@@ -155,8 +154,8 @@ function get_model_intersected(V, EV, FE)
         depot_FE[sigma] = nFE
     end
     rV = vcat(depot_V...)
-    rEV = Lar.SparseArrays.blockdiag(depot_EV...)
-    rFE = Lar.SparseArrays.blockdiag(depot_FE...)
+    rEV = Common.blockdiag(depot_EV...)
+    rFE = Common.blockdiag(depot_FE...)
 
     rV, rcopEV, rcopFE = merge_vertices(rV, rEV, rFE)
     return rV, rcopEV, rcopFE
@@ -165,19 +164,19 @@ end
 
 function model_intersection(V, EV, FV)
 
-    get_centroid(points::Lar.Points) = (sum(points, dims = 2)/size(points, 2))[:, 1]
+    get_centroid(points::Common.Points) = (sum(points, dims = 2)/size(points, 2))[:, 1]
 
-    cop_EV = Lar.coboundary_0(EV)
-    cop_FE = Lar.coboundary_1(V, FV, EV)
+    cop_EV = coboundary_0(EV)
+    cop_FE = coboundary_1(V, FV, EV)
     W = permutedims(V)
 
     rV, rcopEV, rcopFE = get_model_intersected(W, cop_EV, cop_FE)
     V = permutedims(rV)
-    EV = Lar.cop2lar(rcopEV)
-    FE = Lar.cop2lar(rcopFE)
+    EV = cop2lar(rcopEV)
+    FE = cop2lar(rcopFE)
 
 
-    ETs = Lar.FV2EVs(rcopEV, rcopFE) # polygonal face fragments
+    ETs = FV2EVs(rcopEV, rcopFE) # polygonal face fragments
 
     FTs = Vector{Vector{Int64}}[]
 
@@ -189,42 +188,24 @@ function model_intersection(V, EV, FV)
 
 
         baricentro = get_centroid(points_face)
-        normal = Lar.cross(
+        normal = Common.cross(
                 baricentro - points_face[:, 1],
                 points_face[:, 2] - points_face[:, 1],
             )
 
         centroid = points_face[:, 1]
-        @show normal
-        M = TGW.affine_transformation(normal, centroid)
+
+        M = affine_transformation(normal, centroid)
 
 
-        point_z_zero = TGW.apply_matrix(M, points_face)[1:2, :]
+        point_z_zero = Common.apply_matrix(M, points_face)[1:2, :]
 
-        @show point_z_zero
-        @show EV_mapped
-        FT = Lar.triangulate2d(point_z_zero, EV_mapped)
+        FT = triangulate2d(point_z_zero, EV_mapped)
         push!(FTs, map(x->idxs_verts[x],FT))
     end
 
-
-
-    # for i in 1:rcopFE.m
-    #     idxs = Lar.findnz(rcopFE[i,:])[1]
-    #     edges = EV[idxs]
-    #     verts = union(edges...)
-    #     e1 = edges[1]
-    #     p1 = e1[1]
-    #     p2 = e1[2]
-    #     t = findlast(x->p2 in x,edges)
-    #     p3 = setdiff(edges[t],p2)[1]
-    #     p4 = setdiff(verts,[p1,p2,p3])[1]
-    #     push!(FVs,[[p1,p2,p3],[p1,p3,p4]])
-    # end
-
-
     copFV = rcopFE * rcopEV
-    FV = Lar.cop2lar(copFV)
+    FV = cop2lar(copFV)
 
     return V, EV, ETs, FV, FTs
 

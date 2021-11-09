@@ -1,5 +1,5 @@
 using PyCall
-using TGW
+using Arrangement
 
 function read_DXF(filename::String)
     py"""
@@ -33,14 +33,10 @@ filename = raw"C:\Users\marte\Documents\GEOWEB\TEST\sezione_stanza.dxf"
 
 V,EV = read_DXF(filename)
 
-GL.VIEW([GL.GLGrid(V,EV)])
+Visualization.VIEW([Visualization.GLGrid(V,EV)])
 
-W,EW = Lar.fragmentlines((V,EV))
-WW = [[k] for k=1:size(W,2)]
-GL.VIEW( GL.numbering(1.)((W,[WW, EW]),GL.COLORS[1]) )
+T,ETs,FTs = Arrangement.arrange2D(V,EV)
 
-T,FTs,ETs = TGW.arrange2D(V,EV)
+Visualization.VIEW(Visualization.GLExplode(T,ETs,1.,1.,1.,99,1));
 
-GL.VIEW(GL.GLExplode(T,ETs,1.,1.,1.,99,1));
-
-GL.VIEW(GL.GLExplode(T,FTs,1.,1.,1.,99,1));
+Visualization.VIEW(Visualization.GLExplode(T,FTs,1.,1.,1.,99,1));

@@ -1,4 +1,4 @@
-using TGW
+using Arrangement
 
 function load_points(filename::String)::Lar.Points
     io = open(filename, "r")
@@ -12,15 +12,15 @@ end
 
 
 function remove_empty_faces(pointcloud, model)
-    centroid(points::Lar.Points) = (sum(points, dims = 2)/size(points, 2))[:, 1]
-    kdtree = Lar.KDTree(pointcloud)
+    centroid(points::Arrangement.Points) = (sum(points, dims = 2)/size(points, 2))[:, 1]
+    kdtree = Arrangement.KDTree(pointcloud)
     T, ET, ETs, FT, FTs = model
     tokeep = Int64[]
 
     for i = 1:length(FT)
         p1, p2, p3, p4 = FT[i]
         baricentro = centroid(T[:, FT[i]])
-        NN = Lar.inrange(kdtree, baricentro, 0.05)
+        NN = Arrangement.inrange(kdtree, baricentro, 0.05)
         if length(NN) > 0
             push!(tokeep, i)
         end
@@ -35,11 +35,11 @@ include("lar_model_planes_limited.jl")
 include("lar_model_planes_limited_esterno_cornici.jl")
 include("lar_model_planes_limited_esterno.jl")
 
-V = Lar.approxVal(2).(V)
+V = Arrangement.approxVal(2).(V)
 GL.VIEW([GL.GLGrid(V, EV)])
 GL.VIEW([GL.GLGrid(V, FV)])
 
-T, ET, ETs, FT, FTs = TGW.model_intersection(V, EV, FV)
+T, ET, ETs, FT, FTs = Arrangement.model_intersection(V, EV, FV)
 
 
 GL.VIEW(GL.GLExplode(T, ETs, 1.0, 1.0, 1.0, 99, 1));

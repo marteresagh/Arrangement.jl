@@ -120,14 +120,14 @@ function minimal_cycles(angles_fn::Function, verbose = true)
             angles[lld] = as
         end
 
-        println("angoli: ", angles)
+        # println("angoli: ", angles)
 
         # println("count_marks: $(Vector(count_marks))")
         sigma = get_seed_cell()
-        println("spigolo seed: ", sigma)
+        # println("spigolo seed: ", sigma)
         while (sigma) > 0
-            println("")
-            println("########################################  ricerca del nuovo ciclo iniziata")
+            # println("")
+            # println("########################################  ricerca del nuovo ciclo iniziata")
             if verbose
                 print(Int(floor(50 * sum(count_marks) / ld_cellsnum)), "%\r") # <<<<<<<<<<<<<<<<<<<
             end
@@ -148,10 +148,10 @@ function minimal_cycles(angles_fn::Function, verbose = true)
                 corolla = Common.spzeros(Int64, ld_cellsnum)
                 #corolla = zeros(Int64, ld_cellsnum)
 
-                println("bordo della catena", c_lld)
-                println("")
+                # println("bordo della catena", c_lld)
+                # println("")
                 for tau in c_lld.nzind
-                    println("ciclo for: tau $tau")
+                    # println("ciclo for: tau $tau")
                     # tau è il vertice
                     # pivot è lo spigolo
                     b_ld = ld_bounds[tau, :] # per ogni tau calcola il cobordo (quindi gli spigoli adiacenti)
@@ -171,14 +171,14 @@ function minimal_cycles(angles_fn::Function, verbose = true)
                         corolla[adj] *= -1
                     end
 
-                    println("corolla: $(Vector(corolla)), pivot $pivot, adj $adj")
+                    # println("corolla: $(Vector(corolla)), pivot $pivot, adj $adj")
                 end
 
                 c_ld += corolla
                 # println("c_ld: $(Vector(c_ld))")
                 c_lld = ld_bounds * c_ld # calcolo di nuovo il bordo della catena costruita
                 # @show Vector(corolla)
-                println("cicli trovati $(d_bounds)")
+                # println("cicli trovati $(d_bounds)")
 
             end
 
@@ -194,9 +194,9 @@ function minimal_cycles(angles_fn::Function, verbose = true)
             # println("dir_marks: $(Vector(dir_marks))")
             d_bounds = [d_bounds c_ld] # aggiungi una nuova colonna alla lista dei cicli trovati
 
-            println("")
+            # println("")
             sigma = get_seed_cell()
-            println("spigolo seed: ", sigma)
+            # println("spigolo seed: ", sigma)
 
         end
         return d_bounds
