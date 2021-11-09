@@ -89,35 +89,12 @@ end
 get_planar_graph
 """
 function get_planar_graph(V, EV)
-    cop_EV = Lar.coboundary_0(EV)
-    copEW = convert(Lar.ChainOp, cop_EV)
-    W = convert(Lar.Points, V')
+    cop_EV = coboundary_0(EV)
+    copEW = convert(Common.ChainOp, cop_EV)
+    W = pemutedims(V)
 
     T, copET = create_planar_graph(W, copEW)
-    ET = Lar.cop2lar(copET)
+    ET = cop2lar(copET)
 
     return permutedims(T), ET
 end
-
-#
-# function tgw2D_old(T, EV)
-#     sigma = Lar.spzeros(Int8, 0)
-#
-#     V = permutedims(T)
-#     copEV = Lar.lar2cop(EV)
-#     bicon_comps = Lar.Arrangement.biconnected_components(copEV)
-#     if !isempty(bicon_comps)
-#         @show bicon_comps
-#         #Planar_arrangement_2
-#         #V, copEV, copFE =
-#         n, containment_graph, V, EVs, boundaries, shells, shell_bboxes =
-#             TGW.planar_arrangement_2(V, copEV, bicon_comps, sigma)
-#         return n, containment_graph, V, EVs, boundaries, shells, shell_bboxes
-#         EVs = Lar.FV2EVs(copEV, copFE) # polygonal face fragments
-#
-#         triangulated_faces = Lar.triangulate2D(V, [copEV, copFE])
-#         FVs = convert(Array{Lar.Cells}, triangulated_faces)
-#         V = permutedims(V)
-#         return V, EVs, FVs
-#     end
-# end

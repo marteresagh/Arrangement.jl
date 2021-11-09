@@ -2,8 +2,8 @@
 Return matrix map of edges and faces.
 """
 function cell_merging(
-    containment_graph::Lar.ChainOp,
-    V::Lar.Points,
+    containment_graph::Common.ChainOp,
+    V::Common.Points,
     EVs,
     boundaries,
     shells,
@@ -13,11 +13,11 @@ function cell_merging(
     # V_by_row
     # EVs: vettore di copev delle componenti
     # boundaries: vettore con cicli in matrice per ongi componente
-    function bboxes(V::Lar.Points, indexes::Lar.ChainOp)
+    function bboxes(V::Common.Points, indexes::Common.ChainOp)
         boxes = Array{Tuple{Any,Any}}(undef, indexes.n)
         for i = 1:indexes.n
             v_inds = indexes[:, i].nzind
-            boxes[i] = Lar.bbox(V[v_inds, :])
+            boxes[i] = bbox(V[v_inds, :])
         end
         boxes
     end
@@ -33,7 +33,7 @@ function cell_merging(
                 if containment_graph[child, father] > 0
                     child_bbox = shell_bboxes[child]
                     for b = 1:length(father_bboxes)
-                        if Lar.bbox_contains(father_bboxes[b], child_bbox)
+                        if bbox_contains(father_bboxes[b], child_bbox)
                             push!(sums, (father, b, child)) # father: componente, b: quale ciclo di father contiene, child: figlio contenuto nel ciclo
                             break
                         end
@@ -47,8 +47,8 @@ function cell_merging(
     EV = vcat(EVs...)
     edgenum = size(EV, 1)
     facenum = sum(map(x -> size(x, 1), boundaries))
-    FE = Lar.spzeros(Int8, facenum, edgenum)
-    shells2 = Lar.spzeros(Int8, length(shells), edgenum)
+    FE = Common.SparseArrays.spzeros(Int8, facenum, edgenum)
+    shells2 = Common.SparseArrays.spzeros(Int8, length(shells), edgenum)
     r_offsets = [1]
     c_offset = 1
     # submatrices construction

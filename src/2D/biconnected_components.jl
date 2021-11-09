@@ -1,5 +1,5 @@
 """
-    biconnected_components(EV::Lar.ChainOp)
+    biconnected_components(EV::Common.ChainOp)
 
 Compute the biconnected components of the `EV` graph, represented
 by edges as pairs of vertices.

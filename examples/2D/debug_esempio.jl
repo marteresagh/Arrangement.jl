@@ -46,8 +46,8 @@ EV = [
 Visualization.VIEW([ Visualization.GLLines(V,EV) ])
 
 T, ETs, FTs = Arrangement.arrange2D(V,EV)
-GL.VIEW(GL.GLExplode(T,FTs,1.3,1.3,1.3,99,1));
-GL.VIEW(GL.GLExplode(T,ETs,1.3,1.3,1.3,99,1));
+Visualization.VIEW(Visualization.GLExplode(T,FTs,1.3,1.3,1.3,99,1));
+Visualization.VIEW(Visualization.GLExplode(T,ETs,1.3,1.3,1.3,99,1));
 
 
 V = [0. 4. 4. 0. 4. 3. 2. 1.;

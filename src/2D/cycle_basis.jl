@@ -42,7 +42,7 @@ function minimal_2cycles(V::Common.Points, EV::Common.ChainOp)
         j = min(EV[i, :].nzind...)
         EV[i, j] = -1
     end
-    VE = convert(Lar.ChainOp, Lar.SparseArrays.transpose(EV))
+    VE = convert(Common.ChainOp, Common.SparseArrays.transpose(EV))
     EF = minimal_cycles(edge_angle)(V, VE)
 
     return convert(Common.ChainOp, Common.SparseArrays.transpose(EF))
@@ -236,7 +236,7 @@ function get_external_cycle(V::Common.Points, EV::Common.ChainOp, FE::Common.Cha
         return cells[1]
     else
         for c in cells
-            if Lar.face_area(V, EV, FE[c, :]) < 0
+            if face_area(V, EV, FE[c, :]) < 0
                 return c
             end
         end

@@ -15,7 +15,7 @@ function componentgraph(V, EVs, bicon_comps, shells, boundaries)
             shell = shells[i]
             EV = EVs[i]
             for j = 1:n
-                if i != j && Lar.bbox_contains(bboxes[j], bboxes[i])
+                if i != j && bbox_contains(bboxes[j], bboxes[i])
                     containment_graph[i, j] = 1
                     shell_edge_indexes = shells[j].nzind
                     ev = EVs[j][shell_edge_indexes, :]
@@ -63,7 +63,7 @@ function componentgraph(V, EVs, bicon_comps, shells, boundaries)
     shell_bboxes = []
     for i = 1:n_of_comps
         vs_indexes = (abs.(EVs[i]') * abs.(shells[i])).nzind
-        push!(shell_bboxes, Lar.bbox(V[vs_indexes, :]))
+        push!(shell_bboxes, bbox(V[vs_indexes, :]))
     end
 
     # computation and reduction of containment graph

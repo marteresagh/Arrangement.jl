@@ -18,8 +18,8 @@ function create_planar_graph(V, copEV)
         newedges_nums = map(x -> x + finalcells_num, collect(1:size(ev, 1)))
         edge_map[i] = newedges_nums
         finalcells_num += size(ev, 1)
-        rV = convert(Lar.Points, rV)
-        rV, rEV = Lar.skel_merge(rV, rEV, v, ev)
+        rV = convert(Common.Points, rV)
+        rV, rEV = skel_merge(rV, rEV, v, ev)
     end
 
     # merging of close vertices and edges (2D congruence)
@@ -30,10 +30,9 @@ end
 
 
 """
-    frag_edge(V::Lar.Points, EV::Lar.ChainOp, edge_idx::Int, bigPI::Array)
 Fragment the edge of index `edge_idx` using the edges indicized in `bigPI`.
 """
-function frag_edge(V, EV::Lar.ChainOp, edge_idx::Int, bigPI)
+function frag_edge(V, EV::Common.ChainOp, edge_idx::Int, bigPI)
     alphas = Dict{Float64,Int}()
     edge = EV[edge_idx, :]
     verts = V[edge.nzind, :]
@@ -60,7 +59,6 @@ end
 
 
 """
-    intersect_edges(V::Lar.Points, edge1::Lar.Cell, edge2::Lar.Cell)
 Intersect two 2D edges (`edge1` and `edge2`).
 """
 function intersect_edges(V::Common.Points, edge1::Common.Cell, edge2::Common.Cell)
@@ -68,20 +66,20 @@ function intersect_edges(V::Common.Points, edge1::Common.Cell, edge2::Common.Cel
 
     x1, y1, x2, y2 = vcat(map(c -> V[c, :], edge1.nzind)...)
     x3, y3, x4, y4 = vcat(map(c -> V[c, :], edge2.nzind)...)
-    ret = Array{Tuple{Lar.Points,Float64},1}()
+    ret = Array{Tuple{Common.Points,Float64},1}()
 
     v1 = [x2 - x1, y2 - y1]
     v2 = [x4 - x3, y4 - y3]
     v3 = [x3 - x1, y3 - y1]
-    ang1 = Common.dot(LinearAlgebra.normalize(v1), LinearAlgebra.normalize(v2))
-    ang2 = Common.dot(LinearAlgebra.normalize(v1), LinearAlgebra.normalize(v3))
+    ang1 = Common.dot(Common.LinearAlgebra.normalize(v1), Common.LinearAlgebra.normalize(v2))
+    ang2 = Common.dot(Common.LinearAlgebra.normalize(v1), Common.LinearAlgebra.normalize(v3))
     parallel = 1 - err < abs(ang1) < 1 + err
     colinear =
-        parallel && (1 - err < abs(ang2) < 1 + err || -err < Lar.norm(v3) < err)
+        parallel && (1 - err < abs(ang2) < 1 + err || -err < Common.norm(v3) < err)
     if colinear
         o = [x1 y1]
         v = [x2 y2] - o
-        alpha = 1 / Lar.dot(v, v')
+        alpha = 1 / Common.dot(v, v')
         ps = [x3 y3; x4 y4]
         for i = 1:2
             a = alpha * Common.dot(v', (reshape(ps[i, :], 1, 2) - o))
@@ -104,7 +102,6 @@ end
 
 
 """
-    merge_vertices!(V::Lar.Points, EV::Lar.ChainOp, edge_map, err=1e-4)
 Merge congruent vertices and edges in `V` and `EV`.
 """
 function merge_vertices!(V::Common.Points, EV::Common.ChainOp, edge_map, err = 1e-4)
@@ -140,7 +137,7 @@ function merge_vertices!(V::Common.Points, EV::Common.ChainOp, edge_map, err = 1
     nedges = union(edges)
     nedges = filter(t -> t[1] != t[2], nedges)
     nedgenum = length(nedges)
-    nEV = Lar.spzeros(Int8, nedgenum, size(nV, 1))
+    nEV = Common.SparseArrays.spzeros(Int8, nedgenum, size(nV, 1))
     # maps pairs of vertex indices to edge index
     etuple2idx = Dict{Tuple{Int,Int},Int}()
     # builds `edge_map`
@@ -162,7 +159,6 @@ end
 
 
 """
-	spaceindex(model::Lar.LAR)::Array{Array{Int,1},1}
 Generation of *space indexes* for all ``(d-1)``-dim cell members of `model`.
 *Spatial index* made by ``d`` *interval-trees* on
 bounding boxes of ``sigma in S_{d−1}``. Spatial queries solved by
@@ -172,37 +168,15 @@ The return value is an array of arrays of `int`s, indexing cells whose
 containment boxes are intersecting the containment box of the first cell.
 According to Hoffmann, Hopcroft, and Karasick (1989) the worst-case complexity of
 Boolean ops on such complexes equates the total sum of such numbers.
-# Examples 2D
-```
-julia> V = hcat([[0.,0],[1,0],[1,1],[0,1],[2,1]]...);
-julia> EV = [[1,2],[2,3],[3,4],[4,1],[1,5]];
-julia> Sigma = Lar.spaceindex((V,EV))
-5-element Array{Array{Int64,1},1}:
- [4, 5, 2]
- [1, 3, 5]
- [4, 5, 2]
- [1, 3, 5]
- [4, 1, 3, 2]
-```
-From `model2d` value, available in `?input_collection` docstring:
-```julia
-julia> Sigma =  spaceindex(model2d);
-```
-# Example 3D
-```julia
-model = model3d
-Sigma =  spaceindex(model3d);
-Sigma
-```
 """
 function spaceindex(model::Common.LAR)::Array{Array{Int,1},1}
     V, CV = model[1:2]
     dim = size(V, 1)
-    cellpoints = [V[:, CV[k]]::Lar.Points for k = 1:length(CV)]
+    cellpoints = [V[:, CV[k]]::Common.Points for k = 1:length(CV)]
     #----------------------------------------------------------
-    bboxes = [hcat(Lar.boundingbox(cell)...) for cell in cellpoints]
-    xboxdict = Lar.coordintervals(1, bboxes)
-    yboxdict = Lar.coordintervals(2, bboxes)
+    bboxes = [hcat(boundingbox(cell)...) for cell in cellpoints]
+    xboxdict = coordintervals(1, bboxes)
+    yboxdict = coordintervals(2, bboxes)
     # xs,ys are IntervalTree type
     xs = IntervalTrees.IntervalMap{Float64,Array}()
     for (key, boxset) in xboxdict
@@ -212,8 +186,8 @@ function spaceindex(model::Common.LAR)::Array{Array{Int,1},1}
     for (key, boxset) in yboxdict
         ys[tuple(key...)] = boxset
     end
-    xcovers = Lar.boxcovering(bboxes, 1, xs)
-    ycovers = Lar.boxcovering(bboxes, 2, ys)
+    xcovers = boxcovering(bboxes, 1, xs)
+    ycovers = boxcovering(bboxes, 2, ys)
     covers = [intersect(pair...) for pair in zip(xcovers, ycovers)]
 
     if dim == 3
@@ -222,7 +196,7 @@ function spaceindex(model::Common.LAR)::Array{Array{Int,1},1}
         for (key, boxset) in zboxdict
             zs[tuple(key...)] = boxset
         end
-        zcovers = Lar.boxcovering(bboxes, 3, zs)
+        zcovers = boxcovering(bboxes, 3, zs)
         covers = [intersect(pair...) for pair in zip(zcovers, covers)]
     end
     # remove each cell from its cover

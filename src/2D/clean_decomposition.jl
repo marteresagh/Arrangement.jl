@@ -11,7 +11,7 @@ function cleandecomposition(V, copEV, sigma, edge_map)
             v1, v2 = map(i->V[vidxs[i], :], [1,2])
             centroid = .5*(v1 + v2)
 
-            if ! Lar.point_in_face(centroid, V, ev)
+            if ! point_in_face(centroid, V, ev)
                 push!(todel, e)
             end
         end
@@ -30,6 +30,6 @@ function cleandecomposition(V, copEV, sigma, edge_map)
         end
     end
 
-    V, copEV = Lar.delete_edges(todel, V, copEV)
+    V, copEV = delete_edges(todel, V, copEV)
 	return V,copEV
 end
