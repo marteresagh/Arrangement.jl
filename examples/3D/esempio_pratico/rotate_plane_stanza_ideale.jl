@@ -3,7 +3,8 @@ using FileManager
 using Common
 
 function remove_empty_faces(pointcloud, model)
-    centroid(points::Common.Points) = (sum(points, dims = 2)/size(points, 2))[:, 1]
+    centroid(points::Common.Points) =
+        (sum(points, dims = 2)/size(points, 2))[:, 1]
     kdtree = Arrangement.KDTree(pointcloud)
     T, ET, ETs, FT, FTs = model
     tokeep = Int64[]
@@ -19,11 +20,6 @@ function remove_empty_faces(pointcloud, model)
     return T, ET, ETs, FT[tokeep], FTs[tokeep]
 end
 
-
-include("lar_model_planes.jl")
-include("lar_model_planes_limited.jl")
-include("lar_model_planes_limited_esterno_cornici.jl")
-include("lar_model_planes_limited_esterno.jl")
 include("lar_model_planes_rotate.jl")
 include("lar_model_planes_limited_rotate.jl")
 V = Common.approxVal(2).(V)
@@ -44,10 +40,11 @@ model = (T, ET, ETs, FT, FTs)
 pointcloud =
     FileManager.load_points(raw"C:\Users\marte\Documents\Julia_package\TGW.jl\examples\3D\esempio_pratico\stanza_ideale_pc.txt")
 
-
-W, EW, EWs, FW, FWs = remove_empty_faces(pointcloud, model)
+ROTO = Common.r(0, 0, pi / 3)
+ROTATE_PC = Common.apply_matrix(ROTO, pointcloud)
+W, EW, EWs, FW, FWs = remove_empty_faces(ROTATE_PC, model)
 Visualization.VIEW(Visualization.GLExplode(T, FWs, 1.0, 1.0, 1.0, 99, 1));
 Visualization.VIEW([
-    Visualization.GLPoints(permutedims(pointcloud), Visualization.COLORS[1]),
+    Visualization.GLPoints(permutedims(ROTATE_PC), Visualization.COLORS[1]),
     Visualization.GLExplode(T, FWs, 1.0, 1.0, 1.0, 99, 1)...,
 ]);
