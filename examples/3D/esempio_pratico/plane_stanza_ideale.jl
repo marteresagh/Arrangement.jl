@@ -1,6 +1,7 @@
 using Arrangement
 using FileManager
 using Common
+using Visualization
 
 function remove_empty_faces(pointcloud, model)
     centroid(points::Common.Points) = (sum(points, dims = 2)/size(points, 2))[:, 1]
@@ -22,13 +23,16 @@ end
 
 include("lar_model_planes.jl")
 include("lar_model_planes_limited.jl")
-include("lar_model_planes_limited_esterno_cornici.jl")
-include("lar_model_planes_limited_esterno.jl")
-include("lar_model_planes_rotate.jl")
-include("lar_model_planes_limited_rotate.jl")
+# include("lar_model_planes_limited_esterno_cornici.jl")
+# include("lar_model_planes_limited_esterno.jl")
+# include("lar_model_planes_rotate.jl")
+# include("lar_model_planes_limited_rotate.jl")
 V = Common.approxVal(2).(V)
 Visualization.VIEW([Visualization.GLGrid(V, EV)])
 Visualization.VIEW([Visualization.GLGrid(V, FV)])
+model = (V,[[[i] for i in 1:size(V,2)],EV,FV])
+meshes = Visualization.numbering(.5)(model, Visualization.COLORS[1], 0.1);
+Visualization.VIEW(meshes)
 
 T, ET, ETs, FT, FTs = Arrangement.model_intersection(V, EV, FV)
 
@@ -46,7 +50,7 @@ pointcloud =
 
 
 W, EW, EWs, FW, FWs = remove_empty_faces(pointcloud, model)
-Visualization.VIEW(Visualization.GLExplode(T, FWs, 1.0, 1.0, 1.0, 99, 1));
+Visualization.VIEW(Visualization.GLExplode(T, EWs, 1.0, 1.0, 1.0, 99, 1));
 Visualization.VIEW([
     Visualization.GLPoints(permutedims(pointcloud), Visualization.COLORS[1]),
     Visualization.GLExplode(T, FWs, 1.0, 1.0, 1.0, 99, 1)...,

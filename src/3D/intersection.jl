@@ -16,6 +16,7 @@ function frag_face(V, EV, FE, sp_idx, sigma)
     sV = tV[sigmavs, :]
     # sigma face intersection with faces in sp_idx[sigma]
     for i in sp_idx[sigma]
+        println("faccia che sta intersecando: $i")
         tmpV, tmpEV = face_int(tV, EV, FE[i, :])
         sV, sEV
         sV, sEV = skel_merge(sV, sEV, tmpV, tmpEV)
@@ -29,7 +30,7 @@ function frag_face(V, EV, FE, sp_idx, sigma)
         sigma = Common.sparsevec(ones(Int8, length(sigmavs))),
     )
     if nV == nothing ## not possible !! ... (each original face maps to its decomposition)
-        return [], spzeros(Int8, 0, 0), spzeros(Int8, 0, 0)
+        return [], Common.spzeros(Int8, 0, 0), Common.spzeros(Int8, 0, 0)
     end
     nvsize = size(nV, 1)
     nV = [nV zeros(nvsize) ones(nvsize)] * inv(M)[:, 1:3] ## ????
@@ -147,7 +148,7 @@ function get_model_intersected(V, EV, FE)
     depot_EV = Array{Common.ChainOp,1}(undef, fs_num)
     depot_FE = Array{Common.ChainOp,1}(undef, fs_num)
     for sigma = 1:fs_num
-        print(sigma, "/", fs_num, "\r")
+        println(sigma, "/", fs_num)
         nV, nEV, nFE = frag_face(V, EV, FE, sp_idx, sigma)
         depot_V[sigma] = nV
         depot_EV[sigma] = nEV

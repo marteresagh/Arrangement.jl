@@ -1,7 +1,10 @@
 function submanifold_mapping(vs)
-    u1 = vs[2,:] - vs[1,:]
-    u2 = vs[3,:] - vs[1,:]
-    u3 = Common.cross(u1, u2)
+    u1 = Common.normalize(vs[2,:] - vs[1,:])
+    u2 = Common.normalize(vs[3,:] - vs[1,:])
+    u3 = Common.normalize(Common.cross(u1, u2))
+    # @show Common.norm(u1)
+    # @show Common.norm(u2)
+    # @show Common.norm(u3)
     T = Matrix{Float64}(Common.I, 4, 4)
     T[4, 1:3] = - vs[1,:]
     M = Matrix{Float64}(Common.I, 4, 4)
