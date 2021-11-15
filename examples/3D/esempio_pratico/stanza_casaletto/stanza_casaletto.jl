@@ -29,6 +29,15 @@ end
 
 """
 """
+function get_planes(hyperplanes)
+    planes = Plane[]
+    for hyperplane in hyperplanes
+        push!(planes, Plane(hyperplane.direction, hyperplane.centroid))
+    end
+    return planes
+end
+
+
 function planes(
     PLANES::Array{Detection.Hyperplane,1},
     box_oriented = true;
@@ -39,7 +48,7 @@ function planes(
     for plane in PLANES
         pc = plane.inliers
         V, EV, FV = DrawPlanes([plane]; box_oriented = box_oriented)
-        col = Visualization.COLORS[rand(1:12)]
+        col = Visualization.COLORS[3]
         push!(
             mesh,
             Visualization.GLGrid(
@@ -49,14 +58,14 @@ function planes(
                 0.5,
             ),
         )
-        push!(
-            mesh,
-            Visualization.points(
-                Common.apply_matrix(affine_matrix, pc.coordinates);
-                color = col,
-                alpha = 0.8,
-            ),
-        )
+        # push!(
+        #     mesh,
+        #     Visualization.points(
+        #         Common.apply_matrix(affine_matrix, pc.coordinates);
+        #         color = col,
+        #         alpha = 0.8,
+        #     ),
+        # )
     end
 
     return mesh
@@ -83,32 +92,6 @@ function load_connected_components(filename::String)::Common.Cells
     return EV
 end
 
-"""
-"""
-function get_boundary_models(folders)
-    n_planes = length(folders)
-    boundary = Common.LAR[]
-    for i = 1:n_planes
-        #println("$i of $n_planes")
-        if isfile(joinpath(folders[i], "execution.probe"))
-            V = FileManager.load_points(joinpath(
-                folders[i],
-                "boundary_points3D.txt",
-            ))
-            EV = load_connected_components(joinpath(
-                folders[i],
-                "boundary_edges.txt",
-            ))
-            if length(EV) == 0
-                @show i, folders[i]
-            else
-                model = (V, EV)
-                push!(boundary, model)
-            end
-        end
-    end
-    return boundary
-end
 
 ###########################
 NAME_PROJ = "STANZA_CASALETTO_LOD3";
@@ -122,37 +105,21 @@ folders = Detection.get_plane_folders(folder_proj, NAME_PROJ)
 
 hyperplanes, _ = Detection.get_hyperplanes(folders)
 
-# V, EV, FV = DrawPlanes(hyperplanes[1:50]; box_oriented = false)
-#
-# Visualization.VIEW([
-#     Visualization.points(
-#         Common.apply_matrix(Common.t(-centroid...), INPUT_PC.coordinates),
-#         INPUT_PC.rgbs,
-#     ),
-#     Visualization.GLGrid(
-#         Common.apply_matrix(Common.t(-centroid...), V),
-#         FV,
-#         Visualization.COLORS[1],
-#         0.8,
-#     ),
-# ])
+tokeep = [1,2,3,6,9,11,12,13,17,23,25,28,31,36,41,53,54,55,60,63,65,66,67,81,82,84,86,97,123]
 
-# Visualization.VIEW([
-#     planes(hyperplanes, false; affine_matrix = Common.t(-centroid...))...,
-# ])
-#
+V, EV, FV = DrawPlanes(hyperplanes; box_oriented = true)
 
-function get_planes(hyperplanes)
-    planes = Plane[]
-    for hyperplane in hyperplanes
-        push!(planes, Plane(hyperplane.direction, hyperplane.centroid))
-    end
-    return planes
-end
+Visualization.VIEW([
+    Visualization.GLGrid(V, FV)
+])
+
+
 
 my_planes = get_planes(hyperplanes)
 
 aabb = AABB(INPUT_PC.coordinates)
+
+aabbs = [Common.ch_oriented_boundingbox(hyperplane.inliers.coordinates) for hyperplane in hyperplanes]
 
 # aabbs = [AABB(hyperplane.inliers.coordinates) for hyperplane in hyperplanes]
 # u = 0.2
@@ -165,113 +132,15 @@ aabb = AABB(INPUT_PC.coordinates)
 # 	 aabb.z_min -= u
 # end
 
+# aabbs = [aabb for i = 1:length(my_planes)]
 
 # la faccia 13 intersecata con le altre va in loop
-INDS = [
-    13
-    25
-    67
-    53
-    94
-    93
-    9
-    22
-    59
-    47
-    78
-    16
-    91
-    20
-    18
-    90
-    62
-    80
-    85
-    56
-    79
-    96
-    89
-    72
-    14
-    48
-    33
-    45
-    49
-    34
-    35
-    50
-    29
-    37
-    7
-    6
-    31
-    77
-    74
-    66
-    51
-    2
-    97
-    38
-    71
-    76
-    82
-    23
-    87
-    63
-    86
-    28
-    54
-    57
-    98
-    100
-    12
-    26
-    19
-    46
-    99
-    27
-    69
-    73
-    32
-    64
-    52
-    5
-    3
-    61
-    95
-    30
-    10
-    92
-    43
-    39
-    60
-    83
-    24
-    8
-    70
-    58
-    40
-    44
-    81
-    41
-    88
-    65
-    75
-    21
-    84
-    36
-    55
-    11
-    4
-]
 
-aabbs = [aabb for i = 1:length(my_planes[INDS])]
-V, EV, FV = Common.DrawPatches(my_planes[INDS], aabbs)
+V, EV, FV = Common.DrawPatches(my_planes, aabbs)
 EV = unique(EV)
 FV = unique(FV)
 Visualization.VIEW([
     Visualization.GLGrid(V, FV)
-    Visualization.GLGrid(V, [FV[1]], Visualization.COLORS[2])
 ])
 
 # open(raw"C:\Users\marte\Documents\GEOWEB\PROGETTI\CASALETTO\lar_model_planes.jl","w") do f
@@ -288,3 +157,60 @@ T, ET, ETs, FT, FTs = Arrangement.model_intersection(V, EV, FV)
 
 Visualization.VIEW(Visualization.GLExplode(T, ETs, 1.0, 1.0, 1.0, 99, 1));
 Visualization.VIEW(Visualization.GLExplode(T, FTs, 1.0, 1.0, 1.0, 99, 1));
+
+
+############################### riga per riga
+# cop_EV = Arrangement.coboundary_0(EV)
+# cop_FE = Arrangement.coboundary_1(V, FV, EV)
+# W = permutedims(V)
+#
+# # rV, rcopEV, rcopFE = get_model_intersected(W, cop_EV, cop_FE)
+# fs_num = size(cop_FE, 1)
+# sp_idx = Arrangement.spatial_index(W, cop_EV, cop_FE)
+#
+# rV = Common.Points(undef, 0, 3)
+# rEV = Common.spzeros(Int8, 0, 0)
+# rFE = Common.spzeros(Int8, 0, 0)
+#
+# depot_V = Array{Array{Float64,2},1}(undef, fs_num)
+# depot_EV = Array{Common.ChainOp,1}(undef, fs_num)
+# depot_FE = Array{Common.ChainOp,1}(undef, fs_num)
+# sigma = 13
+# # nV, nEV, nFE = Arrangement.frag_face(W, cop_EV, cop_FE, sp_idx, sigma)
+#
+# vs_num = size(W, 1)
+#
+# # 2D transformation of sigma face
+# sigmavs = (abs.(cop_FE[sigma:sigma, :])*abs.(cop_EV))[1, :].nzind
+# sV = W[sigmavs, :]
+# sEV = cop_EV[cop_FE[sigma, :].nzind, sigmavs]
+# M = Arrangement.submanifold_mapping(sV)
+# tV = ([W ones(vs_num)]*M)[:, 1:3]  # folle convertire *tutti* i vertici
+# sV = tV[sigmavs, :]
+#
+# # sigma face intersection with faces in sp_idx[sigma]
+# for i in sp_idx[sigma]
+#     global sV, sEV
+#     println("faccia che sta intersecando: $i")
+#     tmpV, tmpEV = Arrangement.face_int(tV, cop_EV, cop_FE[i, :])
+#     sV, sEV = Arrangement.skel_merge(sV, sEV, tmpV, tmpEV)
+# end
+#
+# # computation of 2D arrangement of sigma face
+# sV = sV[:, 1:2]
+#
+# Visualization.VIEW([Visualization.GLGrid(permutedims(sV),Arrangement.cop2lar(sEV))])
+#
+# nV, nEV, nFE = Arrangement.planar_arrangement(
+#     sV,
+#     sEV;
+#     sigma = Common.sparsevec(ones(Int8, length(sigmavs))),
+# )
+
+model = (T, ET, ETs, FT, FTs)
+W, EW, EWs, FW, FWs = remove_empty_faces(INPUT_PC.coordinates, model)
+Visualization.VIEW(Visualization.GLExplode(T, EWs, 1.0, 1.0, 1.0, 99, 1));
+Visualization.VIEW([
+    # Visualization.GLPoints(permutedims(INPUT_PC.coordinates), Visualization.COLORS[1]),
+    Visualization.GLExplode(T, FWs, 1.0, 1.0, 1.0, 99, 1)...,
+]);

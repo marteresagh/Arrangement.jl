@@ -18,7 +18,6 @@ function frag_face(V, EV, FE, sp_idx, sigma)
     for i in sp_idx[sigma]
         println("faccia che sta intersecando: $i")
         tmpV, tmpEV = face_int(tV, EV, FE[i, :])
-        sV, sEV
         sV, sEV = skel_merge(sV, sEV, tmpV, tmpEV)
     end
 
