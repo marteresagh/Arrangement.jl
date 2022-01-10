@@ -105,23 +105,23 @@ folders = Detection.get_plane_folders(folder_proj, NAME_PROJ)
 
 hyperplanes, _ = Detection.get_hyperplanes(folders)
 
-tokeep = [1,2,3,6,9,11,12,13,17,23,25,28,31,36,41,53,54,55,60,63,65,66,67,81,82,84,86,97,123]
+refine_planes!(hyperplanes)
+save_plane_segments_in_ply(hyperplanes, "test.ply")
 
-V, EV, FV = DrawPlanes(hyperplanes; box_oriented = true)
-
+V, EV, FV = DrawPlanes(hyperplanes; box_oriented = false)
 Visualization.VIEW([
-    Visualization.GLGrid(V, FV)
+    Visualization.GLGrid(V, EV)
 ])
-
 
 
 my_planes = get_planes(hyperplanes)
 
 aabb = AABB(INPUT_PC.coordinates)
+aabbs = [aabb for i = 1:length(my_planes)]
 
-aabbs = [Common.ch_oriented_boundingbox(hyperplane.inliers.coordinates) for hyperplane in hyperplanes]
-
-# aabbs = [AABB(hyperplane.inliers.coordinates) for hyperplane in hyperplanes]
+# aabbs = [Common.ch_oriented_boundingbox(hyperplane.inliers.coordinates) for hyperplane in hyperplanes[tokeep]]
+#
+# # aabbs = [AABB(hyperplane.inliers.coordinates) for hyperplane in hyperplanes]
 # u = 0.2
 # for aabb in aabbs
 # 	 aabb.x_max += u
@@ -132,15 +132,14 @@ aabbs = [Common.ch_oriented_boundingbox(hyperplane.inliers.coordinates) for hype
 # 	 aabb.z_min -= u
 # end
 
-# aabbs = [aabb for i = 1:length(my_planes)]
 
-# la faccia 13 intersecata con le altre va in loop
+
 
 V, EV, FV = Common.DrawPatches(my_planes, aabbs)
 EV = unique(EV)
 FV = unique(FV)
 Visualization.VIEW([
-    Visualization.GLGrid(V, FV)
+    Visualization.GLGrid(V, EV)
 ])
 
 # open(raw"C:\Users\marte\Documents\GEOWEB\PROGETTI\CASALETTO\lar_model_planes.jl","w") do f
@@ -206,6 +205,23 @@ Visualization.VIEW(Visualization.GLExplode(T, FTs, 1.0, 1.0, 1.0, 99, 1));
 #     sEV;
 #     sigma = Common.sparsevec(ones(Int8, length(sigmavs))),
 # )
+function remove_empty_faces(pointcloud, model)
+    centroid(points::Common.Points) =
+        (sum(points, dims = 2)/size(points, 2))[:, 1]
+    kdtree = Arrangement.KDTree(pointcloud)
+    T, ET, ETs, FT, FTs = model
+    tokeep = Int64[]
+
+    for i = 1:length(FT)
+        baricentro = centroid(T[:, FT[i]])
+        NN = Arrangement.inrange(kdtree, baricentro, 0.05)
+        if length(NN) > 0
+            push!(tokeep, i)
+        end
+    end
+
+    return T, ET, ETs, FT[tokeep], FTs[tokeep]
+end
 
 model = (T, ET, ETs, FT, FTs)
 W, EW, EWs, FW, FWs = remove_empty_faces(INPUT_PC.coordinates, model)

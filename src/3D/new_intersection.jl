@@ -1,8 +1,4 @@
-"""
-	frag_face(V, EV, FE, sp_idx, sigma)
 
-`sigma` face fragmentation against faces in `sp_idx[sigma]`
-"""
 function frag_face(V, EV, FE, sp_idx, sigma)
 
     vs_num = size(V, 1)
@@ -29,7 +25,6 @@ function frag_face(V, EV, FE, sp_idx, sigma)
         sigma = Common.sparsevec(ones(Int8, length(sigmavs))),
     )
 
-    # TODO calcolo della cella
     if nV == nothing ## not possible !! ... (each original face maps to its decomposition)
         return [], Common.spzeros(Int8, 0, 0), Common.spzeros(Int8, 0, 0)
     end
@@ -38,44 +33,6 @@ function frag_face(V, EV, FE, sp_idx, sigma)
 
     return nV, nEV, nFE
 end
-
-
-# originale
-# function frag_face(V, EV, FE, sp_idx, sigma)
-#
-#     vs_num = size(V, 1)
-#
-#     # 2D transformation of sigma face
-#     sigmavs = (abs.(FE[sigma:sigma, :])*abs.(EV))[1, :].nzind
-#     sV = V[sigmavs, :]
-#     sEV = EV[FE[sigma, :].nzind, sigmavs]
-#     M = submanifold_mapping(sV)
-#     tV = ([V ones(vs_num)]*M)[:, 1:3]  # folle convertire *tutti* i vertici
-#     sV = tV[sigmavs, :]
-#     # sigma face intersection with faces in sp_idx[sigma]
-#     for i in sp_idx[sigma]
-#         # println("faccia che sta intersecando: $i")
-#         tmpV, tmpEV = face_int(tV, EV, FE[i, :])
-#         sV, sEV = skel_merge(sV, sEV, tmpV, tmpEV)
-#     end
-#
-#     # computation of 2D arrangement of sigma face
-#     sV = sV[:, 1:2]
-#     nV, nEV, nFE = planar_arrangement(
-#         sV,
-#         sEV;
-#         sigma = Common.sparsevec(ones(Int8, length(sigmavs))),
-#     )
-#     @show nV, nEV, nFE
-#     # TODO calcolo della cella
-#     if nV == nothing ## not possible !! ... (each original face maps to its decomposition)
-#         return [], Common.spzeros(Int8, 0, 0), Common.spzeros(Int8, 0, 0)
-#     end
-#     nvsize = size(nV, 1)
-#     nV = [nV zeros(nvsize) ones(nvsize)] * inv(M)[:, 1:3] ## ????
-#
-#     return nV, nEV, nFE
-# end
 
 function merge_vertices(
     V::Common.Points,
@@ -164,12 +121,12 @@ function merge_vertices(
     nfacenum = length(nfaces)
     nFE = Common.spzeros(Int8, nfacenum, size(nEV, 1))
 
-    @show nfacenum
+
     for fi = 1:nfacenum
         for edge in nfaces[fi]
-            @show edge
+
             ei = etuple2idx[Tuple{Int,Int}(sort(collect(edge)))]
-            @show fi, ei
+
             nFE[fi, ei] = sign(edge[2] - edge[1])
         end
     end
@@ -197,9 +154,6 @@ function get_model_intersected(V, EV, FE)
         println(sigma, "/", fs_num)
 
             nV, nEV, nFE = frag_face(V, EV, FE, sp_idx, sigma)
-            # push!(depot_V,nV)
-            # push!(depot_EV,nEV)
-            # push!(depot_FE,nFE)
 
             depot_V[sigma] = nV
             depot_EV[sigma] = nEV
@@ -216,17 +170,16 @@ function get_model_intersected(V, EV, FE)
 end
 
 
-function model_intersection(V, EV, FV)
+function model_intersection(V, EV, FV) # V sempre in colonne
 
     get_centroid(points::Common.Points) =
         (sum(points, dims = 2)/size(points, 2))[:, 1]
 
     cop_EV = coboundary_0(EV)
     cop_FE = coboundary_1(V, FV, EV)
-    W = permutedims(V)
 
     rV, rcopEV, rcopFE = get_model_intersected(W, cop_EV, cop_FE)
-    V = permutedims(rV)
+
     EV = cop2lar(rcopEV)
     FE = cop2lar(rcopFE)
 

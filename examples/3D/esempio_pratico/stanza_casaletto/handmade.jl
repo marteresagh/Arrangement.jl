@@ -80,9 +80,10 @@ INPUT_PC = FileManager.source2pc(source, -1)
 centroid = Common.centroid(INPUT_PC.coordinates)
 
 my_planes =  Plane[]
-
-for i in 1:7
+aabbs = AABB[]
+for i in 1:30
     points = FileManager.load_points(joinpath(folder_proj,"plane_$i.txt"))
+    push!(aabbs,AABB(points))
     plane = Plane(points)
     push!(my_planes,plane)
 end
@@ -95,6 +96,7 @@ V, EV, FV = Common.DrawPatches(my_planes, aabbs)
 EV = unique(EV)
 FV = unique(FV)
 Visualization.VIEW([
+    # Visualization.points(INPUT_PC.coordinates, INPUT_PC.rgbs),
     Visualization.GLGrid(V, EV)
 ])
 
@@ -161,6 +163,24 @@ Visualization.VIEW(Visualization.GLExplode(T, FTs, 1.0, 1.0, 1.0, 99, 1));
 #     sEV;
 #     sigma = Common.sparsevec(ones(Int8, length(sigmavs))),
 # )
+
+function remove_empty_faces(pointcloud, model)
+    centroid(points::Common.Points) =
+        (sum(points, dims = 2)/size(points, 2))[:, 1]
+    kdtree = Arrangement.KDTree(pointcloud)
+    T, ET, ETs, FT, FTs = model
+    tokeep = Int64[]
+
+    for i = 1:length(FT)
+        baricentro = centroid(T[:, FT[i]])
+        NN = Arrangement.inrange(kdtree, baricentro, 0.05)
+        if length(NN) > 0
+            push!(tokeep, i)
+        end
+    end
+
+    return T, ET, ETs, FT[tokeep], FTs[tokeep]
+end
 
 model = (T, ET, ETs, FT, FTs)
 W, EW, EWs, FW, FWs = remove_empty_faces(INPUT_PC.coordinates, model)

@@ -104,6 +104,50 @@ end
 """
 Merge congruent vertices and edges in `V` and `EV`.
 """
+function merge_vertices2!(V::Common.Points, EV::Common.ChainOp, err = 1e-4)
+    vertsnum = size(V, 1)
+    edgenum = size(EV, 1)
+    newverts = zeros(Int, vertsnum)
+    # KDTree constructor needs an explicit array of Float64
+    V = Array{Float64,2}(V)
+    kdtree = KDTree(permutedims(V))
+
+    # merge congruent vertices
+    todelete = []
+    i = 1
+    for vi = 1:vertsnum
+        if !(vi in todelete)
+            nearvs = inrange(kdtree, V[vi, :], err)
+            newverts[nearvs] .= i
+            nearvs = setdiff(nearvs, vi)
+            todelete = union(todelete, nearvs)
+            i = i + 1
+        end
+    end
+    nV = V[setdiff(collect(1:vertsnum), todelete), :]
+
+    # merge congruent edges
+    edges = Array{Tuple{Int,Int},1}(undef, edgenum)
+    oedges = Array{Tuple{Int,Int},1}(undef, edgenum)
+    for ei = 1:edgenum
+        v1, v2 = EV[ei, :].nzind
+        edges[ei] = Tuple{Int,Int}(sort([newverts[v1], newverts[v2]]))
+        oedges[ei] = Tuple{Int,Int}(sort([v1, v2]))
+    end
+    nedges = union(edges)
+    nedges = filter(t -> t[1] != t[2], nedges)
+    nedgenum = length(nedges)
+    nEV = Common.SparseArrays.spzeros(Int8, nedgenum, size(nV, 1))
+    etuple2idx = Dict{Tuple{Int,Int},Int}()
+    for ei = 1:nedgenum
+        nEV[ei, collect(nedges[ei])] .= 1
+        etuple2idx[nedges[ei]] = ei
+    end
+    # return new vertices and new edges
+    return Common.Points(nV), nEV
+end
+
+
 function merge_vertices!(V::Common.Points, EV::Common.ChainOp, edge_map, err = 1e-4)
     vertsnum = size(V, 1)
     edgenum = size(EV, 1)
