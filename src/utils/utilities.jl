@@ -156,20 +156,20 @@ function vequals(v1, v2)
 end
 
 
-# 
-# function vcycle( copEV::Lar.ChainOp, copFE::Lar.ChainOp, f::Int64 )
-# 	edges,signs = SparseArrays.findnz(copFE[f,:])
-# 	vpairs = [s>0 ? SparseArrays.findnz(copEV[e,:])[1] :
-# 					reverse(SparseArrays.findnz(copEV[e,:])[1])
-# 				for (e,s) in zip(edges,signs)]
-# 	a = [pair for pair in vpairs if length(pair)==2]
-# 	function mycat(a::Lar.Cells)
-# 		out=[]
-# 		for cell in a append!(out,cell) end
-# 		return out
-# 	end
-# 	vs = collect(Set(mycat(a)))
-# 	vdict = Dict(zip(vs,1:length(vs)))
-# 	edges = [[vdict[pair[1]], vdict[pair[2]]] for pair in vpairs if length(pair)==2]
-# 	return vs, edges
-# end
+
+function vcycle( copEV::Common.ChainOp, copFE::Common.ChainOp, f::Int64 )
+	edges,signs = SparseArrays.findnz(copFE[f,:])
+	vpairs = [s>0 ? SparseArrays.findnz(copEV[e,:])[1] :
+					reverse(SparseArrays.findnz(copEV[e,:])[1])
+				for (e,s) in zip(edges,signs)]
+	a = [pair for pair in vpairs if length(pair)==2]
+	function mycat(a::Common.Cells)
+		out=[]
+		for cell in a append!(out,cell) end
+		return out
+	end
+	vs = collect(Set(mycat(a)))
+	vdict = Dict(zip(vs,1:length(vs)))
+	edges = [[vdict[pair[1]], vdict[pair[2]]] for pair in vpairs if length(pair)==2]
+	return vs, edges
+end

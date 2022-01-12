@@ -6,7 +6,7 @@ function arrange3D(V, EV, FV)
     T, copET, copFE, copCF = space_arrangement(W, cop_EV, cop_FE)
 
     T = permutedims(T)
-    T, CVs, FVs, EVs = Lar.pols2tria(T, copET, copFE, copCF) # whole assembly
+    T, CVs, FVs, EVs = Arrangement.pols2tria(T, copET, copFE, copCF) # whole assembly
     return T, EVs, FVs, CVs
 end
 

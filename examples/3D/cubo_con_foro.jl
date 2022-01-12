@@ -60,7 +60,7 @@ Visualization.VIEW([
     Visualization.GLLines(V,EV),
 ]);
 
-T, ET, ETs, FT, FTs = Arrangement.model_intersection(V, EV, FV)
+@time T, ET, ETs, FT, FTs = Arrangement.model_intersection(V, EV, FV)
 
 
 Visualization.VIEW(Visualization.GLExplode(T, ETs, 1.0, 1.0, 1.0, 99, 1));

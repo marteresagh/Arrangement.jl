@@ -1,15 +1,24 @@
 using Common
 using Visualization
 using Arrangement
+
 # V in 2D e EV sono gli spigoli
 function find_cycles(V,EV)
-    triangles = Common.constrained_triangulation2D(V,EV)
+    bicon = Arrangement.biconnected_components(Arrangement.lar2cop(EV))
+    all_edges_used = union(bicon...)
+    copEV = Arrangement.lar2cop(EV)
+    a = [i for i in 1:size(V,2) if sum(copEV[all_edges_used,:], dims = 1)[1,i]!=0]
+    newcopEV = copEV[all_edges_used,a]
+    points = V[:,a]
+    new_EV = Arrangement.cop2lar(newcopEV)
+    boundary_edges = sort.(new_EV)
+
+    triangles = Common.constrained_triangulation2D(points,boundary_edges)
     edges_of_triangles = convert(Array{Array{Int64,1},1}, collect(Set(Common.CAT(map(Common.FV2EV,triangles)))))
     edges_of_triangles = unique(sort.(edges_of_triangles))
-    boundary_edges = sort.(EV)
-    cells = clustering_cells(V,triangles,edges_of_triangles, boundary_edges)
+    cells = clustering_cells(points,triangles,edges_of_triangles, boundary_edges)
     FVs = map(x->triangles[x],cells)
-    return boundary_edges,FVs
+    return points,boundary_edges,FVs
 end
 
 function clustering_cells(V,triangles, edges_of_triangles, boundary_edges)
@@ -88,12 +97,12 @@ V = [
 EV = [
         [1, 2],
         [2, 3],
-        # [3, 4],
-        # [4, 5],
+        [3, 4],
+        [4, 5],
         [3, 6],
         [1, 6],
-        # [6, 7],
-        # [7, 9],
+        [6, 7],
+        [7, 9],
         [8, 9],
         [8, 10],
         [9, 10],
@@ -104,7 +113,7 @@ EV = [
         [19, 18],
         [17, 18],
         [10, 17],
-        # [10, 29],
+        [10, 29],
         [29, 30],
         [30, 31],
         [29, 31],
@@ -113,13 +122,13 @@ EV = [
         [17, 27],
         [20, 19],
         [18, 20],
-        # [14, 15],
-        # [15, 16],
+        [14, 15],
+        [15, 16],
         [19, 21],
         [21, 22],
         [22, 23],
         [23, 19],
-        # [21, 24],
+        [21, 24],
         [24, 25],
         [25, 26],
         [24, 26],
@@ -128,18 +137,21 @@ EV = [
 
 Visualization.VIEW([ Visualization.GLLines(V,EV) ])
 
-FVs = find_cycles(V,EV)
-Visualization.VIEW(Visualization.GLExplode(V,FVs,1.2,1.2,1.2,99,1));
+T,ET,FTs = find_cycles(V,EV)
+Visualization.VIEW([ Visualization.GLLines(T,ET) ])
+Visualization.VIEW(Visualization.GLExplode(T,FTs,1.2,1.2,1.2,99,1));
 
-V = [1 6. 14 11  3 20  19 24 27 28;
-     6 1  7  11 11  1  11  1  5  1]
+V = [1 6. 14 11  3 20  19 24 27 28 30;
+     6 1  7  11 11  1  11  1  5  1  2]
 
-EV = [[1,2],[2,3],[3,4],[4,5],[1,5],[2,6],[6,7],[7,4],[8,10],[8,9],[9,10]]
-
+EV = [[1,2],[2,3],[3,4],[4,5],[1,5],[2,6],[6,7],[7,4],[8,10],[8,9],[9,10], [10,11]]
+T,ET = Arrangement.get_planar_graph(V, EV)
+V_final, EV_final, FVs_final = find_cycles(newV,newEV)
 Visualization.VIEW([ Visualization.GLLines(V,EV) ])
 
-FVs = find_cycles(V,EV)
-Visualization.VIEW(Visualization.GLExplode(V,FVs,1.2,1.2,1.2,99,1));
+T,ET,FTs = find_cycles(V,EV)
+Visualization.VIEW([ Visualization.GLLines(T,ET) ])
+Visualization.VIEW(Visualization.GLExplode(T,FTs,1.2,1.2,1.2,99,1));
 
 
 ######################### intersezioni facce nel 3D
@@ -256,27 +268,20 @@ function sigma_intersection(W,cop_EV,cop_FE,sigma,sp_idx)
     T = permutedims(sV)[1:2,:]
     ET = Arrangement.cop2lar(sEV)
     newV,newEV = Arrangement.get_planar_graph(T, ET)
-    EV_final,FVs_final = find_cycles(newV,newEV)
-    @show EV_final
-    @show FVs_final
-    V_final = Common.apply_matrix(Common.inv(permutedims(M)),Common.add_zeta_coordinates(newV,0.0))
+    V_final2D, EV_final, FVs_final = find_cycles(newV,newEV)
+    V_final = Common.apply_matrix(Common.inv(permutedims(M)),Common.add_zeta_coordinates(V_final2D,0.0))
 
     rV = permutedims(V_final)
     rEV = Arrangement.lar2cop(EV_final)
     rFE = Common.spzeros(Int8, length(FVs_final), length(EV_final))
     for i in 1:length(FVs_final)
         edges_boundary = sort.(Common.get_boundary_edges(V_final,FVs_final[i]))
-        @show edges_boundary
         idx_edges = []
         for j in 1:length(edges_boundary)
             indices = findall(x->x==edges_boundary[j],EV_final)
             union!(idx_edges,indices)
         end
-        @show idx_edges
         for t in idx_edges
-            @show rFE
-            @show i
-            @show t
             rFE[i,t]= 1
         end
     end
@@ -285,19 +290,33 @@ function sigma_intersection(W,cop_EV,cop_FE,sigma,sp_idx)
     # return V_final,EV_final,FV_final
 end
 
+function get_topology3D(rV, rcopEV, rcopFE)
+    points = permutedims(rV)
+    all_edges = Arrangement.cop2lar(rcopEV)
+    edges_for_faces = Arrangement.FV2EVs(rcopEV, rcopFE) # polygonal face fragments
+
+    triangles_for_faces = []
+    for i = 1:length(edges_for_faces)
+        EV = edges_for_faces[i]
+        idx_points = union(EV...)
+        points_on_face = points[:,idx_points]
+        plane = Common.Plane(points_on_face)
+        T = Common.apply_matrix(plane.matrix, points_on_face)[1:2,:]
+        ET = map.(x->findfirst(j->j==x,idx_points),EV)
+        triangles_in_cells = Common.constrained_triangulation_with_holes2D(T,ET)
+
+        push!(triangles_for_faces, map.(x->idx_points[x],triangles_in_cells))
+    end
+
+    return points, all_edges, edges_for_faces, triangles_for_faces
+end
 
 
-rV, rcopEV, rcopFE = arrangement3D_prova(V,EV,FV)
-T = permutedims(rV)
-ET = Arrangement.cop2lar(rcopEV)
-T, ETs, FTs = get_topology3D(rV, rcopEV, rcopFE)
+@time rV, rcopEV, rcopFE = arrangement3D_prova(V,EV,FV)
+
+
+T, ET, ETs, FTs = get_topology3D(rV, rcopEV, rcopFE)
 
 Visualization.VIEW([ Visualization.GLLines(T,ET) ])
-
-
-Visualization.VIEW(Visualization.GLExplode(T,FTs,1.2,1.2,1.2,99,1));
-FVs = [[[2, 4, 3], [3, 1, 2]]]
-
-FV_final = Common.get_boundary_edges(V,FVs[1])
-
-union!(FV_final...)
+Visualization.VIEW(Visualization.GLExplode(T, ETs, 1.0, 1.0, 1.0, 99, 1));
+Visualization.VIEW(Visualization.GLExplode(T, FTs, 1.4, 1.4, 1.4, 99, 1));

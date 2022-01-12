@@ -26,6 +26,6 @@ module Arrangement
     include("3D/main.jl")
     include("3D/dimension_travel.jl")
     include("3D/intersection.jl")
-    # include("3D/cycle_basis.jl")
+    include("3D/cycle_basis.jl")
 
 end # module
