@@ -28,4 +28,7 @@ module Arrangement
     include("3D/intersection.jl")
     include("3D/cycle_basis.jl")
 
+
+    #my new code
+    include("myCode/my_arrangement.jl")
 end # module

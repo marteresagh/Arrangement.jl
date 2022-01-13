@@ -31,14 +31,20 @@ include(raw"planes\lar_model_planes.jl")
 # include("lar_model_planes_limited_esterno.jl")
 # include("lar_model_planes_rotate.jl")
 # include("lar_model_planes_limited_rotate.jl")
-V = Common.approxVal(2).(V)
+
 # Visualization.VIEW([Visualization.GLGrid(V, EV)])
 # Visualization.VIEW([Visualization.GLGrid(V, FV)])
 # model = (V,[[[i] for i in 1:size(V,2)],EV,FV])
 # meshes = Visualization.numbering(.5)(model, Visualization.COLORS[1], 0.1);
 # Visualization.VIEW(meshes)
+@time rV, rcopEV, rcopFE = Arrangement.my_arrangement_3D(V,EV,FV)
+@time T, ET, ETs, FTs = Arrangement.get_topology3D(rV, rcopEV, rcopFE)
 
-T, ET, ETs, FT, FTs = Arrangement.model_intersection(V, EV, FV)
+Visualization.VIEW([ Visualization.GLLines(T,ET) ])
+Visualization.VIEW(Visualization.GLExplode(T, ETs, 1.0, 1.0, 1.0, 99, 1));
+Visualization.VIEW(Visualization.GLExplode(T, FTs, 1.4, 1.4, 1.4, 99, 1));
+
+@time T, ET, ETs, FT, FTs = Arrangement.model_intersection(V, EV, FV)
 Visualization.VIEW(Visualization.GLExplode(T, ETs, 1.0, 1.0, 1.0, 99, 1));
 Visualization.VIEW(Visualization.GLExplode(T, FTs, 1.0, 1.0, 1.0, 99, 1));
 model = (T, ET, ETs, FT, FTs)

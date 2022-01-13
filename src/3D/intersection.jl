@@ -125,7 +125,7 @@ function merge_vertices(
             nEV[ei, collect(nedges[ei])] .= 1
             nEV
         end
-        @show nedges[ei]
+
         etuple2idx[nedges[ei]] = ei
     end
     for e = 1:nedgenum
@@ -164,12 +164,9 @@ function merge_vertices(
     nfacenum = length(nfaces)
     nFE = Common.spzeros(Int8, nfacenum, size(nEV, 1))
 
-    @show nfacenum
     for fi = 1:nfacenum
         for edge in nfaces[fi]
-            @show edge
             ei = etuple2idx[Tuple{Int,Int}(sort(collect(edge)))]
-            @show fi, ei
             nFE[fi, ei] = sign(edge[2] - edge[1])
         end
     end

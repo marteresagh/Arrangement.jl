@@ -80,21 +80,21 @@ INPUT_PC = FileManager.source2pc(source, -1)
 centroid = Common.centroid(INPUT_PC.coordinates)
 
 my_planes =  Plane[]
-aabbs = AABB[]
-for i in 1:30
-    points = FileManager.load_points(joinpath(folder_proj,"plane_$i.txt"))
-    push!(aabbs,AABB(points))
-    plane = Plane(points)
-    push!(my_planes,plane)
-end
+# aabbs = AABB[]
+# for i in 1:30
+#     points = FileManager.load_points(joinpath(folder_proj,"plane_$i.txt"))
+#     push!(aabbs,AABB(points))
+#     plane = Plane(points)
+#     push!(my_planes,plane)
+# end
 
 aabb = AABB(INPUT_PC.coordinates)
 aabbs = [aabb for i = 1:length(my_planes)]
 
 
 V, EV, FV = Common.DrawPatches(my_planes, aabbs)
-EV = unique(EV)
-FV = unique(FV)
+unique!(EV)
+unique!(FV)
 Visualization.VIEW([
     # Visualization.points(INPUT_PC.coordinates, INPUT_PC.rgbs),
     Visualization.GLGrid(V, EV)
@@ -110,6 +110,12 @@ Visualization.VIEW([
 
 V = Common.approxVal(2).(V)
 T, ET, ETs, FT, FTs = Arrangement.model_intersection(V, EV, FV)
+@time rV, rcopEV, rcopFE = Arrangement.my_arrangement_3D(V,EV,FV)
+@time T, ET, ETs, FTs = Arrangement.get_topology3D(rV, rcopEV, rcopFE)
+
+Visualization.VIEW([ Visualization.GLLines(T,ET) ])
+Visualization.VIEW(Visualization.GLExplode(T, ETs, 1.0, 1.0, 1.0, 99, 1));
+Visualization.VIEW(Visualization.GLExplode(T, FTs, 1.4, 1.4, 1.4, 99, 1));
 
 
 Visualization.VIEW(Visualization.GLExplode(T, ETs, 1.0, 1.0, 1.0, 99, 1));

@@ -106,13 +106,21 @@ folders = Detection.get_plane_folders(folder_proj, NAME_PROJ)
 hyperplanes, _ = Detection.get_hyperplanes(folders)
 
 refine_planes!(hyperplanes)
-save_plane_segments_in_ply(hyperplanes, "test.ply")
+# save_plane_segments_in_ply(hyperplanes, "test.ply")
 
 V, EV, FV = DrawPlanes(hyperplanes; box_oriented = false)
+unique!(EV)
+unique!(FV)
 Visualization.VIEW([
     Visualization.GLGrid(V, EV)
 ])
 
+@time rV, rcopEV, rcopFE = Arrangement.my_arrangement_3D(V,EV,FV)
+@time T, ET, ETs, FTs = Arrangement.get_topology3D(rV, rcopEV, rcopFE)
+
+Visualization.VIEW([ Visualization.GLLines(T,ET) ])
+Visualization.VIEW(Visualization.GLExplode(T, ETs, 1.0, 1.0, 1.0, 99, 1));
+Visualization.VIEW(Visualization.GLExplode(T, FTs, 1.4, 1.4, 1.4, 99, 1));
 
 my_planes = get_planes(hyperplanes)
 
